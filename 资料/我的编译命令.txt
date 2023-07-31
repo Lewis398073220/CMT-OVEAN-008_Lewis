@@ -1,0 +1,7 @@
+make -j T=best1502x_ibrt_anc
+
+郭：
+make T=best1502x_ibrt_anc FREEMAN_ENABLED_STERO=1
+
+编译 lst 文件:
+make T=best1502x_ibrt_anc FREEMAN_ENABLED_STERO=1 lst
