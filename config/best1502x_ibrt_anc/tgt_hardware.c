@@ -21,6 +21,14 @@
 #include "limiter.h"
 #include "spectrum_fix.h"
 
+#ifdef CMT_008_LDO_ENABLE
+
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_enable = {
+    HAL_IOMUX_PIN_P0_3, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
+};
+
+#endif /*CMT_008_LDO_ENABLE*/
+
 const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_pinmux_pwl[CFG_HW_PWL_NUM] = {
 #if (CFG_HW_PWL_NUM > 0)
     {HAL_IOMUX_PIN_P1_5, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE},

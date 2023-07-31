@@ -85,6 +85,10 @@ extern const uint16_t CFG_HW_ADCKEY_MAP_TABLE[CFG_HW_ADCKEY_NUMBER];
 #endif
 #endif
 
+#ifdef CMT_008_LDO_ENABLE
+extern const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_enable;
+#endif /*CMT_008_LDO_ENABLE*/
+
 extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM];
 
 // DC CALIB define

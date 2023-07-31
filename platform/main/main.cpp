@@ -504,6 +504,22 @@ int main(void)
 #ifdef SLIM_BTC_ONLY
         ret = app_init_btc();
 #else
+
+#ifdef CMT_008_LDO_ENABLE
+        //hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, sizeof(cfg_hw_ldo_enable)/sizeof(struct HAL_IOMUX_PIN_FUNCTION_MAP));
+        TRACE_IMM(3, "%s, jay4 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+
+        if (cfg_hw_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
+        {
+            TRACE_IMM(3, "%s,jay5 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+        
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin, HAL_GPIO_DIR_OUT, 1);
+        }
+        TRACE_IMM(2, "%s,jay6 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+
+#endif /*CMT_008_LDO_ENABLE*/
+
         ret = app_init();
 #endif
 

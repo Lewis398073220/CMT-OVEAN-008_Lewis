@@ -1,3 +1,17 @@
+#### Add by Jay #####
+export CMT_008_LDO_ENABLE ?= 1
+ifeq ($(CMT_008_LDO_ENABLE),1)
+KBUILD_CPPFLAGS += -DCMT_008_LDO_ENABLE
+endif
+
+export CMT_008_UI ?= 1
+ifeq ($(CMT_008_UI),1)
+KBUILD_CPPFLAGS += -DCMT_008_UI
+endif
+
+
+#### Add by Jay, end. #####
+
 
 #### ANC DEFINE START ######
 export ANC_APP ?= 1
