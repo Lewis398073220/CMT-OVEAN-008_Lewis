@@ -148,6 +148,19 @@ typedef enum {
 #endif
     MAX_RECORD_NUM = 0x2D,
     AUD_ID_CUSTOM_LEAK_DETECT = 0x2E,
+/* Add by jay, start. */
+    AUD_ID_BT_ANC_ON = 0x2F,
+    AUD_ID_BT_ANC_OFF = 0x30,
+    AUD_ID_BT_AWARENESS_ON = 0x31,
+    AUD_ID_BT_BATTERY_LOW = 0x32,
+    AUD_ID_BT_CLICK = 0x33,
+    AUD_ID_BT_DOUBLE_CLICK = 0x34,
+    AUD_ID_BT_BEEP_21 = 0x35,
+    AUD_ID_BT_BEEP_22 = 0x36,
+    AUD_ID_BT_BEEP_24 = 0x37,
+    AUD_ID_BT_FACTORY_RESET = 0x38,
+
+/* Add by jay, end. */
     AUD_ID_ENUM_BOTTOM = 0x10000000,    // AUD_ID_ENUM is uint32_t
 } AUD_ID_ENUM;
 

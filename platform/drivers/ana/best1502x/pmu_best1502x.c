@@ -4624,7 +4624,9 @@ void pmu_vio_3v3(bool en)
     lock = int_lock();
     if (en) {
         pmu_module_config(PMU_SENSOR,PMU_MANUAL_MODE,PMU_LDO_ON,PMU_LP_MODE_ON,PMU_DSLEEP_MODE_OFF);
-        pmu_module_ramp_volt(PMU_SENSOR, PMU_LDO_SENSOR_3_3V, PMU_LDO_SENSOR_3_3V);
+        /* Modified by Jay, project use PMU LDO of 1.8V. */
+		//pmu_module_ramp_volt(PMU_SENSOR, PMU_LDO_SENSOR_3_3V, PMU_LDO_SENSOR_3_3V);
+        pmu_module_ramp_volt(PMU_SENSOR, PMU_LDO_SENSOR_1_8V, PMU_LDO_SENSOR_1_8V);
     } else {
         pmu_module_config(PMU_SENSOR,PMU_MANUAL_MODE,PMU_LDO_OFF,PMU_LP_MODE_ON,PMU_DSLEEP_MODE_OFF);
     }

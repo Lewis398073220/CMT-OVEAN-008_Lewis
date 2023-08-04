@@ -139,7 +139,7 @@ int app_anc_assist_mempool_get_buff(uint8_t **buff, uint32_t size)
 #endif
 
 #if (defined(PLAYBACK_USE_I2S) || defined(FREEMAN_ENABLED_STERO))
-#define APP_MEDIA_BUFFER_SIZE (10*1024)
+#define APP_MEDIA_BUFFER_SIZE (50*1024)//(10*1024) //Modified by Jay, can not change to (50*1024), otherwise the headset will crash if you adjust the max volume.//
 #elif (PROMPT_USE_AAC) 
 #define APP_MEDIA_BUFFER_SIZE (50*1024)
 #else

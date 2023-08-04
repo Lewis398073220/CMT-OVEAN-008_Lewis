@@ -54,6 +54,10 @@
 #include "app_hfp.h"
 #include "bt_if.h"
 #include "intersyshci.h"
+/*add by jay*/
+#include "ble_core_common.h" 
+//#include "app_ble_mode_switch.h"
+/*add by jay*/
 
 #ifdef APP_CHIP_BRIDGE_MODULE
 #include "app_chip_bridge.h"
@@ -293,6 +297,17 @@ extern "C" int32_t voice_dev_init(void);
 #include "app_walkie_talkie.h"
 #endif
 
+#ifdef __CST816S_TOUCH__
+#include "cst_capacitive_tp_hynitron_cst0xx.h"
+#include "cst_ctp_hynitron_ext.h"
+#endif /*__CST816S_TOUCH__*/
+
+#ifdef __USE_3_5JACK_CTR__
+#include "app_user.h"
+
+extern int app_play_linein_onoff(bool onoff);
+#endif /*__USE_3_5JACK_CTR__*/
+
 #define APP_BATTERY_LEVEL_LOWPOWERTHRESHOLD (1)
 #define POWERON_PRESSMAXTIME_THRESHOLD_MS  (5000)
 
@@ -422,6 +437,7 @@ void app_start_10_second_timer(uint8_t timer_id)
 
 void app_set_10_second_timer(uint8_t timer_id, uint8_t enable, uint8_t period)
 {
+    TRACE(2, "[%s][%d] 10timer:", __func__,timer_id);
     APP_10_SECOND_TIMER_STRUCT *timer = &app_10_second_array[timer_id];
 
     timer->timer_en = enable;
@@ -456,13 +472,20 @@ void CloseEarphone(void)
 
     activeCons = btif_me_get_activeCons();
     activeSourceCons = btif_me_get_source_activeCons();
-
+#if 0 /*Modified by Jay*/
 #ifdef ANC_APP
     if(app_anc_work_status()) {
         app_set_10_second_timer(APP_POWEROFF_TIMER_ID, 1, 30);
         return;
     }
 #endif /* ANC_APP */
+#endif  /*Modified by Jay*/
+
+#if defined(__USE_3_5JACK_CTR__)
+    if(app_apps_3p5jack_plugin_flag(0))
+        return;
+#endif
+
     if(activeCons == 0 && activeSourceCons == 0) {
         TRACE(0,"!!!CloseEarphone\n");
         app_shutdown();
@@ -635,6 +658,7 @@ const  APP_KEY_HANDLE  pwron_key_handle_cfg[] = {
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_UP},           "power on: shutdown"     , app_bt_key_shutdown, NULL},
 };
 #elif defined(__ENGINEER_MODE_SUPPORT__)
+//jay
 const  APP_KEY_HANDLE  pwron_key_handle_cfg[] = {
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITUP},           "power on: normal"     , app_poweron_normal, NULL},
 #if !defined(BLE_ONLY_ENABLED)
@@ -698,6 +722,11 @@ extern "C" int system_reset(void);
 
 int app_shutdown(void)
 {
+#if defined(__USE_3_5JACK_CTR__)
+    if(app_apps_3p5jack_plugin_flag(0))
+        app_play_linein_onoff(0);
+#endif
+
 #ifndef IGNORE_APP_SHUTDOWN
     system_shutdown();
 #endif
@@ -970,7 +999,7 @@ void app_switch_player_key(APP_KEY_STATUS *status, void *param)
 
 void app_voice_assistant_key(APP_KEY_STATUS *status, void *param)
 {
-    TRACE(2,"%s event %d", __func__, status->event);
+    TRACE(2,"%s event jay %d", __func__, status->event);
 #if defined(BISTO_ENABLED) || defined(__AI_VOICE__)
     if (app_ai_manager_is_in_multi_ai_mode())
     {
@@ -1070,10 +1099,80 @@ void app_switch_dualmic_key(APP_KEY_STATUS *status, void *param)
     switch_dualmic_status();
 }
 
+/* Add by jay. */
+#ifdef CMT_008_UI
+extern bt_status_t LinkDisconnectDirectly(bool PowerOffFlag);
+extern void nv_record_rebuild(NV_REBUILD_TYPE_E rebuild_type);
+
+extern struct BT_DEVICE_T  app_bt_device;
+
+void app_factory_reset(void)
+{
+	//app_status_indication_recover_set(APP_STATUS_INDICATION_FACTORYRESET);
+
+	app_audio_sendrequest(APP_BT_STREAM_INVALID, (uint8_t)APP_BT_SETTING_CLOSEALL, 0);
+	osDelay(500);
+
+	LinkDisconnectDirectly(false);
+	osDelay(800);
+	
+    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0); //add by jay
+
+#if 0
+	struct nvrecord_env_t *nvrecord_env;
+	nv_record_sector_clear();
+	nv_record_env_init();
+	nv_record_env_get(&nvrecord_env);
+	if(nvrecord_env) {
+		nvrecord_env->media_language.language = NVRAM_ENV_MEDIA_LANGUAGE_DEFAULT;        
+        nvrecord_env->factory_tester_status.status = NVRAM_ENV_FACTORY_TESTER_STATUS_DEFAULT;
+    }
+    nv_record_env_set(nvrecord_env);
+#if FPGA==0	
+    nv_record_flash_flush();
+#endif
+#else
+	//nv_record_rebuild(NV_REBUILD_ALL);
+#endif
+
+    nv_record_rebuild(NV_REBUILD_ALL);
+	osDelay(500);
+
+    app_ibrt_if_enter_freeman_pairing();
+
+	//app_bt_reconnect_idle_mode();
+//#ifdef  __IAG_BLE_INCLUDE__
+	//app_ble_force_switch_adv(BLE_SWITCH_USER_BT_CONNECT, false);
+//#endif
+	//app_bt_accessmode_set_req(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
+}
+#endif /*CMT_008_UI*/
+/* Add by jay, end. */
+
+
 #if defined(ANC_APP)
 void app_anc_key(APP_KEY_STATUS *status, void *param)
 {
+    TRACE(2,"%s,  freq:[%d]",__func__,hal_sysfreq_get());
+    
+    //app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_208M);
+    
+    TRACE(2,"%s,  freq:[%d]",__func__,hal_sysfreq_get());
+
+    
     static uint8_t flag = 0;
+    TRACE(1,"%s jay anc key  flag:[%d]",__func__,flag);
+
+    app_anc_loop_switch();
+
+#ifdef __USE_3_5JACK_CTR__
+    if(apps_3p5_jack_get_val())
+    {
+        app_play_linein_onoff(true);
+    }
+#endif
+
+#if 0 /* Disable by Jay, since have pop noice */
     if(!flag)
     {
         flag = 1;
@@ -1092,6 +1191,7 @@ void app_anc_key(APP_KEY_STATUS *status, void *param)
         flag = 0;
         app_anc_loop_switch();
     }
+#endif //0
 }
 #endif
 
@@ -1135,12 +1235,13 @@ const APP_KEY_HANDLE  app_key_handle_cfg[] = {
 #if defined(__APP_KEY_FN_STYLE_A__)
 //--
 const APP_KEY_HANDLE  app_key_handle_cfg[] = {
-    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"bt function key",app_bt_key_shutdown, NULL},
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"bt function key",app_bt_key_shutdown, NULL},  //disable by jay
+    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_INITLONGLONGPRESS},"bt function key",app_bt_key_shutdown, NULL}, //add by jay
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS},"bt function key",app_bt_key, NULL},
 #if defined(BT_USB_AUDIO_DUAL_MODE_TEST) && defined(BT_USB_AUDIO_DUAL_MODE)
-    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_bt_key, NULL},
+    1{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_bt_key, NULL},
 #ifdef RB_CODEC
-    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_switch_player_key, NULL},
+    1{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_switch_player_key, NULL},
 #else
     //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"btusb mode switch key.",app_btusb_audio_dual_mode_test, NULL},
 #endif
@@ -1189,7 +1290,12 @@ const APP_KEY_HANDLE  app_key_handle_cfg[] = {
 #endif
 };
 #else //#elif defined(__APP_KEY_FN_STYLE_B__)
+//jay
 const APP_KEY_HANDLE  app_key_handle_cfg[] = {
+/* add by jay */
+    //{{APP_KEY_CODE_ANC,APP_KEY_EVENT_CLICK},"bt anc key",app_anc_mode_switch_key, NULL},
+    {{APP_KEY_CODE_VOICE_ASSISTANT,APP_KEY_EVENT_CLICK}, "google assistant key", app_voice_assistant_key, NULL},
+/* add by jay, end */
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"bt function key",app_bt_key_shutdown, NULL},
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS},"bt function key",app_bt_key, NULL},
     {{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_bt_key, NULL},
@@ -1495,7 +1601,7 @@ int app_deinit(int deinit_case)
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio_standalone_locally(AUD_ID_POWER_OFF, 0);
 #endif
-        osDelay(1000);
+        osDelay(2000); /* Modified by Jay, changed from 1000 to 2000. */
 #endif
         af_close();
 #if defined(__THIRDPARTY) && defined(__AI_VOICE__)
@@ -2014,6 +2120,11 @@ int app_init(void)
     bool need_check_key = true;
 #endif
     uint8_t pwron_case = APP_POWERON_CASE_INVALID;
+
+#if defined(__USE_3_5JACK_CTR__)
+    bool line_in=false;//add by pang
+#endif
+
 #ifdef BT_USB_AUDIO_DUAL_MODE
     uint8_t usb_plugin = 0;
 #endif
@@ -2188,6 +2299,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
                 app_key_open(false);
                 app_key_init_on_charging();
                 nRet = 0;
+
 #if defined(BT_USB_AUDIO_DUAL_MODE)
                 usb_plugin = 1;
 #elif defined(BTUSB_AUDIO_MODE)
@@ -2204,6 +2316,12 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 #endif
                 need_check_key = false;
                 nRet = 0;
+
+                /* Add by jay */
+                TRACE(0,"CHARGING PWRON! 3");
+                //pwron_case = APP_BATTERY_OPEN_MODE_CHARGING_PWRON;
+                goto exit;
+                /* Add by jay, end. */
 #ifdef MSD_MODE
                 pwron_case = APP_BATTERY_OPEN_MODE_CHARGING_PWRON;
                 goto exit;
@@ -2423,6 +2541,11 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 
     TRACE(1,"\n\n\nbt_stack_init_done:%d\n\n\n", pwron_case);
 
+#if defined(__USE_3_5JACK_CTR__)
+    if(apps_3p5jack_plugin_check())
+        line_in=true;
+#endif
+
     app_application_ready_to_start_callback();
     if (pwron_case == APP_POWERON_CASE_REBOOT){
 
@@ -2499,8 +2622,13 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 #endif
 #if defined( __BTIF_EARPHONE__) && defined(__BTIF_BT_RECONNECT__)
 #if defined(FREEMAN_ENABLED_STERO)
+#if defined(__USE_3_5JACK_CTR__)
+    if(!line_in)
+#endif
+    {
         osDelay(100);
         app_bt_profile_connect_manager_opening_reconnect();
+    }
 #endif
 #endif
 #endif
@@ -2578,7 +2706,15 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
                 case APP_POWERON_CASE_CALIB:
                     break;
                 case APP_POWERON_CASE_BOTHSCAN:
-                    app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN);
+                    /* Add by Jay */
+                    TRACE(0,"Jay UI enter pairing.");
+                    /*app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
+                    osDelay(100);
+                    app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
+                    osDelay(300);*/
+                    app_ibrt_if_enter_freeman_pairing();
+                    /* Add by Jay, end */
+                    app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN); //pairing LED indication
 #ifdef MEDIA_PLAYER_SUPPORT
                     media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
 #endif
@@ -2681,6 +2817,18 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 #ifdef RB_CODEC
             rb_ctl_init();
 #endif
+
+#ifdef __CST816S_TOUCH__
+            //ctp_hynitron_update();
+            cst816s_open_module();
+#endif /*__CST816S_TOUCH__*/
+
+#ifdef __USE_3_5JACK_CTR__
+        app_user_event_open_module();
+#endif /*__USE_3_5JACK_CTR__*/
+
+        app_anc_switch(APP_ANC_MODE1); /* Add by Jay, The ANC mode is turn on at power on state. */
+
         }else{
             af_close();
             app_key_close();

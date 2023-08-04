@@ -27,7 +27,7 @@ static const app_anc_coef_index_cfg_t app_anc_coef_index_cfg[APP_ANC_MODE_QTY] =
   /*  FF ,  FB , PSAP, SPK ,  TT */      
     {XXXX, XXXX, XXXX, XXXX, XXXX,},    // APP_ANC_MODE_OFF
     {0x00, 0x00, XXXX, XXXX, XXXX,},    // APP_ANC_MODE1
-    // {XXXX, 0x00, 0x00, XXXX, XXXX,},    // APP_ANC_MODE2
+    {0x01, 0x01, XXXX, XXXX, XXXX,},    // APP_ANC_MODE2 // {XXXX, 0x00, 0x00, XXXX, XXXX,},    // APP_ANC_MODE2 //Enable by jay
     // {0x02, 0x02, XXXX, XXXX, XXXX,},    // APP_ANC_MODE3
     // {0x03, 0x03, XXXX, XXXX, XXXX,},    // APP_ANC_MODE4
     // {XXXX, 0x04, 0x00, XXXX, XXXX,},    // APP_ANC_MODE5

@@ -1973,13 +1973,69 @@ void app_ibrt_raw_ui_test_key(APP_KEY_STATUS *status, void *param)
 #ifdef IBRT_SEARCH_UI
         app_ibrt_search_ui_handle_key_v2(&curr_device->remote, status, param);
 #else
-        app_ibrt_normal_ui_handle_key_v2(&curr_device->remote, status, param);
+        app_ibrt_normal_ui_handle_key_v2(&curr_device->remote, status, param); //jay
 #endif
     }
 }
 
+#ifdef CMT_008_UI
+extern void app_anc_key(APP_KEY_STATUS *status, void *param);
+//extern void app_voice_assistant_key(APP_KEY_STATUS *status, void *param);
+//extern void bt_key_handle_siri_key(enum APP_KEY_EVENT_T event);
+extern void app_ibrt_ui_factory_reset_test(void);
+extern void app_factory_reset(void);
+extern void bt_key_handle_mute_key(void);
+
+static void app_mute_key_handle(APP_KEY_STATUS *status, void *param)
+{
+    TRACE(2,"%s event:%d", __func__, status->event);
+    switch(status->event)
+    {
+        case APP_KEY_EVENT_CLICK:
+            //bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
+            bt_key_handle_mute_key();
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void app_factory_reset_handle(APP_KEY_STATUS *status, void *param)
+{
+    TRACE(2,"%s event:%d", __func__, status->event);
+    switch(status->event)
+    {
+        case APP_KEY_EVENT_LONGPRESS:
+            app_factory_reset();
+            //app_ibrt_ui_factory_reset_test();
+            break;
+
+        default:
+            break;
+    }
+}
+
+#endif/*CMT_008_UI*/
+
+#if 0 /*add by jay, to test MC*/
+extern void app_dfu_key_handler(APP_KEY_STATUS *status, void *param);
+#endif /*add by jay, to test MC*/
+
+
+//jay
 const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
 {
+#ifdef CMT_008_UI /*add by jay*/
+    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_DOUBLECLICK},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    {{APP_KEY_CODE_ANC,APP_KEY_EVENT_CLICK},"bt anc key", app_anc_key, NULL},
+    {{APP_KEY_CODE_VOICE_ASSISTANT,APP_KEY_EVENT_CLICK}, "google assistant key", app_mute_key_handle, NULL},
+    {{APP_KEY_CODE_VOICE_ASSISTANT|APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS}, "factory reset key", app_factory_reset_handle, NULL},
+    //{{APP_KEY_CODE_VOICE_ASSISTANT|APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_dfu_key_handler, NULL}, //to test MC
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},//to test LineIn
+#else /* CMT_008_UI */
 #if defined(__AI_VOICE__) || defined(BISTO_ENABLED)
     {{APP_KEY_CODE_GOOGLE, APP_KEY_EVENT_FIRST_DOWN}, "google assistant key", app_ai_manager_key_event_handle, NULL},
     {{APP_KEY_CODE_GOOGLE, APP_KEY_EVENT_UP}, "google assistant key", app_ai_manager_key_event_handle, NULL},
@@ -2007,6 +2063,7 @@ const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
     {{APP_KEY_CODE_FN2,APP_KEY_EVENT_LONGPRESS},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
     {{APP_KEY_CODE_FN3,APP_KEY_EVENT_CLICK},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
     {{APP_KEY_CODE_FN3,APP_KEY_EVENT_DOUBLECLICK},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
+#endif /* CMT_008_UI */
 };
 
 void app_tws_ibrt_raw_ui_test_key_init(void)

@@ -735,7 +735,9 @@ static void hal_gpadc_irq_handler(GPADC_IRQ_HDLR_PARAM)
 #endif
 
 #if defined(GPADC_HAS_EXT_SLOPE_CAL) || defined(GPADC_HAS_EXT_SLOPE_CAL2)
-                    volt = hal_gpadc_adc2volt_ext(adc_val, ch);
+                    /* Modifed by Jay, fixed the can't got the NTC ADC valume. */
+                    //volt = hal_gpadc_adc2volt_ext(adc_val, ch); // Disable by Jay
+                    volt = hal_gpadc_adc2volt(adc_val);  // Add by Jay
 #else
                     volt = hal_gpadc_adc2volt(adc_val);
 #endif

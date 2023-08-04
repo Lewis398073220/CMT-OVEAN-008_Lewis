@@ -179,7 +179,7 @@
 //     <i> Defines maximum number of objects that can be active at the same time.
 //     <i> Applies to objects with system provided memory for control blocks.
 #ifndef OS_TIMER_NUM
-#define OS_TIMER_NUM                4
+#define OS_TIMER_NUM                4//50//4 //Modified by Jay, changed from 4 to 50.
 #endif
 
 //   </e>
@@ -216,7 +216,7 @@
 //   <i> May be set to 0 when timers are not used.
 //   <i> Default: 4
 #ifndef OS_TIMER_CB_QUEUE
-#define OS_TIMER_CB_QUEUE           16
+#define OS_TIMER_CB_QUEUE           16//200//16  //Modified by Jay, changed from 16 to 200.
 #endif
 
 // </h>

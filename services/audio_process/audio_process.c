@@ -1227,6 +1227,7 @@ int audio_process_open(enum AUD_SAMPRATE_T sample_rate, enum AUD_BITS_T sample_b
     } else{
         nv_role = 1;
     }
+     TRACE(1,"Jay ++++++++++++++++++++++++++++++++++++++++++++++++ ");
     stereo_surround_st = stereo_surround_init(sample_rate,frame_size,sample_bits,nv_role,
 #if defined(__VIRTUAL_SURROUND_CP__)
     1

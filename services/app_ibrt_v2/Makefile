@@ -36,6 +36,7 @@ subdir-ccflags-y += \
     -Iplatform/drivers/uarthci \
     -Iplatform/drivers/ana \
     -Iplatform/drivers/bt \
+    -Iplatform/drivers/ac107\
     -Iutils/cqueue \
     -Iutils/heap \
     -Iservices/audioflinger \

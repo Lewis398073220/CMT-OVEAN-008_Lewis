@@ -70,6 +70,33 @@
 #include "app_audio_control.h"
 #endif
 
+#ifdef CMT_008_UI
+void bt_key_handle_siri_key(enum APP_KEY_EVENT_T event);
+
+void bt_key_handle_mute_key(void)
+{
+    CALL_STATE_E call_state = app_bt_get_call_state();
+    TRACE(1,"%s *********** [%d] *********",__func__,call_state);
+    if (call_state == CALL_STATE_IDLE)
+    {
+        TRACE(1,"%s *********** siri *********",__func__);
+        bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
+    }
+    else
+    {
+        if(app_bt_manager.hf_tx_mute_flag == 0)
+        {
+            TRACE(1,"%s *********** MUTE *********",__func__);
+            hfp_handle_key(HFP_KEY_MUTE);
+        }
+        else
+        {
+            TRACE(1,"%s *********** CLEAR MUTE *********",__func__);
+            hfp_handle_key(HFP_KEY_CLEAR_MUTE);
+        }
+    }
+}
+#endif /*CMT_008_UI*/
 
 #ifdef BT_HFP_SUPPORT
 
@@ -80,14 +107,17 @@ void bt_key_handle_siri_key(enum APP_KEY_EVENT_T event)
      switch(event)
      {
         case  APP_KEY_EVENT_NONE:
-            if(open_siri_flag == 1){
+            if(open_siri_flag == 1)
+            {
                 TRACE(0,"open siri");
                 app_hfp_siri_voice(true);
                 open_siri_flag = 0;
-            } /*else {
+            }
+            else
+            {
                 TRACE(0,"evnet none close siri");
                 app_hfp_siri_voice(false);
-            }*/
+            }
             break;
         case  APP_KEY_EVENT_LONGLONGPRESS:
         case  APP_KEY_EVENT_UP:
@@ -791,12 +821,15 @@ void bt_key_handle_func_doubleclick(void)
 
     HFCALL_MACHINE_ENUM hfcall_machine = app_get_hfcall_machine();
 
+    TRACE(0,"%s 77777777777777777 %d ",__func__,hfcall_machine);
+
 #ifdef SUPPORT_SIRI
     open_siri_flag=0;
 #endif
 
     switch(hfcall_machine)
     {
+#ifndef __CST816S_TOUCH__
         case HFCALL_MACHINE_CURRENT_IDLE:
 #ifdef BT_HID_DEVICE
             app_bt_hid_send_capture();
@@ -804,6 +837,8 @@ void bt_key_handle_func_doubleclick(void)
             bt_key_handle_customer_doubleclick();
 #endif
         break;
+#endif /*__CST816S_TOUCH__*/
+
 #ifdef BT_HFP_SUPPORT
         case HFCALL_MACHINE_CURRENT_INCOMMING:
             bt_key_handle_call(CALL_STATE_INCOMING);
@@ -1115,7 +1150,13 @@ void bt_key_handle_up_key(enum APP_KEY_EVENT_T event)
 #ifdef BT_AVRCP_SUPPORT
         case  APP_KEY_EVENT_UP:
         case  APP_KEY_EVENT_CLICK:
+            
+#ifdef __CST816S_TOUCH__
+            app_bt_volumeup();
+#else /*__CST816S_TOUCH__*/
             a2dp_handleKey(AVRCP_KEY_FORWARD);
+#endif /*__CST816S_TOUCH__*/
+
             break;
 #endif
         default:
@@ -1135,7 +1176,12 @@ void bt_key_handle_down_key(enum APP_KEY_EVENT_T event)
 #ifdef BT_AVRCP_SUPPORT
         case  APP_KEY_EVENT_UP:
         case  APP_KEY_EVENT_CLICK:
+ 
+#ifdef __CST816S_TOUCH__
+            app_bt_volumedown();
+#else /*__CST816S_TOUCH__*/
             a2dp_handleKey(AVRCP_KEY_BACKWARD);
+#endif /*__CST816S_TOUCH__*/
             break;
 #endif
         default:
@@ -1207,6 +1253,115 @@ void bt_key_send(APP_KEY_STATUS *status)
     }
 }
 
+#ifdef __CST816S_TOUCH__
+static void bt_key_handle_left_right_key(enum APP_KEY_EVENT_T event)
+{
+    //media_PlayAudio(AUD_ID_BT_BEEP_21, 0);
+
+    CALL_STATE_E call_state = app_bt_get_call_state();
+    if (call_state == CALL_STATE_IDLE)
+    {
+        switch(event)
+        {
+            case APP_KEY_EVENT_FORWARD:
+                a2dp_handleKey(AVRCP_KEY_FORWARD);
+                break;
+
+            case APP_KEY_EVENT_BACKWARD:
+                a2dp_handleKey(AVRCP_KEY_BACKWARD);
+                break;
+            default:
+                break;
+         }
+    }
+}
+
+static void bt_key_handle_double_click_key(void)
+{
+    HFCALL_MACHINE_ENUM hfcall_machine = app_get_hfcall_machine();
+    TRACE(2," %s 33333 [%d]",__func__,hfcall_machine);
+    
+    CALL_STATE_E call_state = app_bt_get_call_state();
+    if (call_state == CALL_STATE_IDLE)
+    {
+        bt_key_handle_music_playback();
+    }
+
+    switch(hfcall_machine)
+    {
+        case HFCALL_MACHINE_CURRENT_INCOMMING:
+        case HFCALL_MACHINE_CURRENT_INCOMMING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_ANSWER_CALL);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING:
+            hfp_handle_key(HFP_KEY_THREEWAY_HANGUP_AND_ANSWER);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_INCOMMING_ANOTHER_CALLING:
+            hfp_handle_key(HFP_KEY_ANSWER_CALL);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING_ANOTHER_IDLE:
+        case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_THREEWAY_HOLD_AND_ANSWER);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_IDLE_ANOTHER_IDLE:
+            /*CALL_STATE_E call_state = app_bt_get_call_state();
+            if (call_state == CALL_STATE_IDLE)
+            {
+                bt_key_handle_music_playback();
+            }*/
+            break;
+
+        default:
+        break;
+    }
+}
+
+static void bt_key_handle_longpress_key(void)
+{
+    HFCALL_MACHINE_ENUM hfcall_machine = app_get_hfcall_machine();
+    TRACE(2," %s 66666 [%d]",__func__,hfcall_machine);
+
+    switch(hfcall_machine)
+    {
+        case HFCALL_MACHINE_CURRENT_INCOMMING:
+        case HFCALL_MACHINE_CURRENT_OUTGOING:
+        case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_HANGUP_CALL);
+
+            hfp_handle_key(HFP_KEY_CLEAR_MUTE);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_INCOMMING_ANOTHER_IDLE:
+        case HFCALL_MACHINE_CURRENT_OUTGOING_ANOTHER_IDLE:
+        case HFCALL_MACHINE_CURRENT_CALLING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_HANGUP_CALL);
+
+            hfp_handle_key(HFP_KEY_CLEAR_MUTE);
+            break;
+
+        case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING_ANOTHER_IDLE:
+            hfp_handle_key(HFP_KEY_THREEWAY_HOLD_REL_INCOMING);
+            break;
+
+        //case HFCALL_MACHINE_CURRENT_3WAY_HOLD_CALLING_ANOTHER_IDLE:
+            //hfp_handle_key(HFP_KEY_THREEWAY_HOLD_AND_ANSWER);
+            //break;
+
+        case HFCALL_MACHINE_CURRENT_3WAY_INCOMMING:
+            hfp_handle_key(HFP_KEY_THREEWAY_HOLD_REL_INCOMING);
+            break;
+
+        default:
+        break;
+    }
+}
+
+#endif /*__CST816S_TOUCH__*/
+
 void bt_key_handle(void)
 {
     if(bt_key.code != 0xff)
@@ -1215,6 +1370,17 @@ void bt_key_handle(void)
         switch(bt_key.code)
         {
             case BTAPP_FUNC_KEY:
+#ifdef __CST816S_TOUCH__
+            {
+                //media_PlayAudio(AUD_ID_BT_CLICK, 0);
+
+                /*CALL_STATE_E call_state = app_bt_get_call_state();
+                if (call_state == CALL_STATE_IDLE)
+                {
+                    bt_key_handle_music_playback();
+                }*/
+            }
+#else /*__CST816S_TOUCH__*/
 #if defined(BT_SOURCE)
                 if(app_bt_source_is_enabled())
                 {
@@ -1225,6 +1391,7 @@ void bt_key_handle(void)
                 {
                     bt_key_handle_func_key((enum APP_KEY_EVENT_T)bt_key.event);
                 }
+#endif /*__CST816S_TOUCH__*/
                 break;
             case BTAPP_VOLUME_UP_KEY:
                 bt_key_handle_up_key((enum APP_KEY_EVENT_T)bt_key.event);
@@ -1237,6 +1404,33 @@ void bt_key_handle(void)
                 bt_key_handle_siri_key((enum APP_KEY_EVENT_T)bt_key.event);
                 break;
 #endif
+/*add by jay*/
+#ifdef __CST816S_TOUCH__
+            case BTAPP_QUICK_MONIORT_KEY:
+                //bt_key_handle_cover_key((enum APP_KEY_EVENT_T)bt_key.event);
+                break;
+
+            case BTAPP_FORWARD_KEY:
+                bt_key_handle_left_right_key((enum APP_KEY_EVENT_T)bt_key.event);
+                break;
+
+            case BTAPP_BACKWARD_KEY:
+                bt_key_handle_left_right_key((enum APP_KEY_EVENT_T)bt_key.event);
+                break;
+
+            case BTAPP_DOUBLECLICK_KEY:
+                //media_PlayAudio(AUD_ID_BT_DOUBLE_CLICK, 0);
+                bt_key_handle_double_click_key();
+                break;
+
+            case BTAPP_LONGPRESS_KEY:
+                TRACE(0," LONGPRESS_KEY 55555555555555555555555555555555555555555555555555555");
+                //media_PlayAudio(AUD_ID_BT_BEEP_24, 0);
+                bt_key_handle_longpress_key();
+                break;
+#endif /*__CST816S_TOUCH__*/
+/*add by jay*/
+
             default:
                 TRACE(0,"bt_key_handle  undefined key");
                 break;
@@ -1253,4 +1447,93 @@ void bt_key_init(void)
     bt_key.event = 0xff;
 #endif
 }
+
+#ifdef __CST816S_TOUCH__
+void Touch_gesture_up(void)
+{
+	APP_KEY_STATUS status;
+	status.code=BTAPP_VOLUME_UP_KEY;
+	status.event=APP_KEY_EVENT_CLICK;
+	
+	bt_key_send(&status);
+}
+
+void TOUCH_gesture_down(void)
+{
+	APP_KEY_STATUS status;
+	status.code=BTAPP_VOLUME_DOWN_KEY;
+	status.event=APP_KEY_EVENT_CLICK;
+	
+	bt_key_send(&status);
+}
+
+void TOUCH_gesture_left(void)
+{
+    APP_KEY_STATUS status;
+    status.code=BTAPP_BACKWARD_KEY;
+    status.event=APP_KEY_EVENT_BACKWARD;
+
+    bt_key_send(&status);
+}
+
+void TOUCH_gesture_right(void)
+{
+    APP_KEY_STATUS status;
+    status.code=BTAPP_FORWARD_KEY;
+    status.event=APP_KEY_EVENT_FORWARD;
+
+    bt_key_send(&status);
+}
+
+void TOUCH_gesture_click(void)
+{
+    APP_KEY_STATUS status;
+    status.code=BTAPP_FUNC_KEY;
+    status.event=APP_KEY_EVENT_CLICK;
+
+    bt_key_send(&status);
+}
+
+void TOUCH_gesture_double_click(void)
+{
+    APP_KEY_STATUS status;
+    status.code=BTAPP_DOUBLECLICK_KEY;
+    status.event=APP_KEY_EVENT_DOUBLECLICK;
+
+    bt_key_send(&status);
+}
+
+void TOUCH_gesture_triple_click(void)
+{
+//APP_KEY_STATUS status;
+//status.code=BTAPP_FUNC_KEY;
+//status.event=APP_KEY_EVENT_CLICK;
+
+//bt_key_send(&status);
+}
+
+void TOUCH_gesture_long_press(void)
+{
+    APP_KEY_STATUS status;
+    status.code=BTAPP_LONGPRESS_KEY;
+    status.event=APP_KEY_EVENT_DOUBLECLICK;
+
+    bt_key_send(&status);
+}
+
+void TOUCH_gesture_cover_press(void)
+{
+    //APP_KEY_STATUS status;
+    //status.code=BTAPP_COVER_KEY;
+    //status.event=APP_KEY_EVENT_DOWN;
+
+    //bt_key_send(&status);
+}
+
+void TOUCH_gesture_cover_leave(void)
+{
+
+}
+#endif /*__CST816S_TOUCH__*/
+
 

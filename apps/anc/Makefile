@@ -94,6 +94,7 @@ subdir-ccflags-y += \
 	-Iapps/factory \
 	-Iapps/voice_detector \
 	-Iapps/anc/src/assist \
+        -Iapps/user \
 	-Iservices/anc/inc \
 	-Iservices/multimedia/audio/codec/sbc/src/inc \
 	-Iservices/multimedia/audio/codec/sbc/inc \

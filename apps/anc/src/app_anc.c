@@ -39,6 +39,10 @@
 #include "app_voice_detector.h"
 #endif
 
+#include "app_voice_detector.h" //add by jay
+#include "bluetooth.h" //add by jay
+#include "app_utils.h" //add by jay
+
 #if defined(PSAP_APP)
 #include "psap_process.h"
 // TODO: Clean up this code...
@@ -196,6 +200,7 @@ static void _anc_unlock(void)
 }
 #endif
 
+extern void media_PlayAudio(AUD_ID_ENUM id,uint8_t device_id); //add by jay
 
 bool app_anc_work_status(void)
 {
@@ -806,8 +811,29 @@ int32_t app_anc_switch_locally(app_anc_mode_t mode)
 
 int32_t app_anc_loop_switch(void)
 {
-    static app_anc_mode_t mode = APP_ANC_MODE_OFF;
-    mode = (mode + 1) % APP_ANC_MODE_QTY;
+    /* Disable by jay*/
+    /*static app_anc_mode_t mode = APP_ANC_MODE_OFF;
+    mode = (mode + 1) % APP_ANC_MODE_QTY;*/
+    
+    app_anc_mode_t mode = g_app_anc_mode;
+    if(mode == APP_ANC_MODE_OFF)
+    {
+        media_PlayAudio(AUD_ID_BT_AWARENESS_ON, 0); //add by jay
+        mode = APP_ANC_MODE2;
+    }
+    else if(mode == APP_ANC_MODE2)
+    {
+        media_PlayAudio(AUD_ID_BT_ANC_ON, 0); //add by jay
+        mode = APP_ANC_MODE1;
+    }
+    else if(mode == APP_ANC_MODE1)
+    {
+        media_PlayAudio(AUD_ID_BT_ANC_OFF, 0); //add by jay
+        mode = APP_ANC_MODE_OFF;
+    }
+
+    /* Setup the system requency as 'APP_SYSFREQ_208M', add by Jay. */
+    app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_208M);
 
     app_anc_switch(mode);
 

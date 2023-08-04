@@ -134,6 +134,11 @@ extern "C"
 
 #include "app_media_player.h"
 
+#if defined(__USE_3_5JACK_CTR__)
+#include "app_user.h"
+#include "app_bt_media_manager.h"
+#endif
+
 extern "C" bool app_anc_work_status(void);
 
 extern uint8_t bt_media_current_music_get(void);
@@ -2698,6 +2703,10 @@ void app_bt_sniff_manager_process(const btif_event_t *Event)
     }
 }
 
+#ifdef CMT_008_UI
+    static bool power_on_flag = FALSE;
+#endif
+
 APP_BT_GOLBAL_HANDLE_HOOK_HANDLER app_bt_global_handle_hook_handler[APP_BT_GOLBAL_HANDLE_HOOK_USER_QTY] = {0};
 void app_bt_global_handle_hook(const btif_event_t *Event)
 {
@@ -2876,9 +2885,31 @@ void app_bt_global_handle(const btif_event_t *Event)
     #endif
             }
 #endif
+#ifdef CMT_008_UI
+        if(btif_me_get_callback_event_type(Event) == BTIF_BTEVENT_LINK_CONNECT_IND)
+        {
+            media_PlayAudio(AUD_ID_BT_CONNECTED, 0);
+            power_on_flag = TRUE;
+            app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+        }
+#endif /* CMT_008_UI */
+#ifdef CMT_008_UI_LED_INDICATION
+        if(btif_me_get_callback_event_type(Event) == BTIF_BTEVENT_LINK_CONNECT_IND)
+            app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+#endif /* CMT_008_UI_LED_INDICATION */
+
+
             break;
         case BTIF_BTEVENT_LINK_DISCONNECT:
         {
+        TRACE(0,"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+#ifdef CMT_008_UI
+        if(power_on_flag)
+            media_PlayAudio(AUD_ID_BT_DIS_CONNECT, 0);
+
+        app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+#endif /* CMT_008_UI */
+
 #ifdef CUSTOM_BITRATE
             app_ibrt_user_a2dp_codec_info_action();
 #endif
@@ -3256,7 +3287,8 @@ static int app_bt_handle_process(APP_MESSAGE_BODY *msg_body)
             else
             {
 #ifndef FPGA
-                app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+                TRACE(0,"JAY JAY PAIR OUT 2");
+                //app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN); /* disable by jay */
 #endif
             }
             break;
@@ -4721,6 +4753,9 @@ void app_bt_init(void)
 #ifdef RESUME_MUSIC_AFTER_CRASH_REBOOT
     app_bt_resume_music_after_crash_reboot_init();
 #endif
+#ifdef CMT_008_UI
+    power_on_flag = FALSE;
+#endif
 }
 
 extern "C" bool app_bt_has_connectivitys(void)
@@ -5952,6 +5987,8 @@ void app_bt_ibrt_reconnect_mobile_profile(bt_bdaddr_t *mobile_addr)
     {
         app_bt_reconnect_a2dp_profile(mobile_addr);
     }
+
+    media_PlayAudio(AUD_ID_BT_CONNECTED, 0); //add by jay
 }
 
 void app_bt_ibrt_connect_mobile_a2dp_profile(const bt_bdaddr_t *addr)

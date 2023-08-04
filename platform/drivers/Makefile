@@ -1,4 +1,4 @@
-obj-y := ana/ codec/ norflash/ btpcm/ sbcacc/ spi_norflash/
+obj-y := ana/ codec/ norflash/ btpcm/ sbcacc/ spi_norflash/ cst812t/ ac107/
 
 ifneq ($(NO_BT_DRIVER),1)
 obj-y += bt/

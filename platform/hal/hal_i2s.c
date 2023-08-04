@@ -47,7 +47,7 @@
 #endif
 
 #ifndef I2S_MCLK_DIV
-#define I2S_MCLK_DIV                    2
+#define I2S_MCLK_DIV                    1  // Modified by Jay, changed from 2 to 1. (i2s/MCLK: 1=24.576Mhz;2=12.298Mhz)
 #endif
 
 enum HAL_I2S_STATUS_T {
@@ -648,6 +648,7 @@ int hal_i2s_setup_stream(enum HAL_I2S_ID_T id, enum AUD_STREAM_T stream, const s
                 if (master_clk_map == 0) {
 #ifdef I2S_MCLK_FROM_SPDIF
                     // By default MCLK is half of (CODEC_FREQ_24P576M or CODEC_FREQ_22P5792M)
+                    TRACE(3,"%s [%d] [%d] jay",__func__,i2s_sample_rate[i].cmu_div,i);
                     hal_spdif_clock_out_enable(HAL_SPDIF_ID_0, i2s_sample_rate[i].cmu_div * I2S_MCLK_DIV);
 #ifdef I2S_MCLK_PIN
                     hal_cmu_i2s_mclk_enable(HAL_CMU_I2S_MCLK_PLLSPDIF0);

@@ -99,6 +99,15 @@ const char BUILD_INFO_LOCATION sys_build_info[] =
     //--------------------
     NEW_LINE_STR "BUILD_DATE=" __DATE__   " "   __TIME__
     NEW_LINE_STR "REV_INFO=" TO_STR(REVISION_INFO)
+
+/***********************************************************************************/
+/* Record the software version, that can read when started in debug log show.
+ * Note: Update here each time you release the software, is very important.
+ * Add by Jay.
+ */ 
+    NEW_LINE_STR "FW_VER=" TO_STR(0.02)
+/***********************************************************************************/
+
     NEW_LINE_STR;
 #endif
 

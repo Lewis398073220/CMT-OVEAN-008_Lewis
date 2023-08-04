@@ -115,6 +115,7 @@ static IIR_MC_CFG_T mc_iir_cfg;
 #define CODEC_OUTPUT_DEV                    CFG_HW_AUD_OUTPUT_PATH_SPEAKER_DEV
 #endif
 
+//jay
 int anc_load_cfg(void)
 {
     int res = 0;

@@ -289,6 +289,7 @@ bool bt_media_is_media_idle(void)
     }
     return true;
 }
+
 void bt_media_clean_up(void)
 {
     uint32_t lock = int_lock();

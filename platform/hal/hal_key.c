@@ -28,6 +28,8 @@
 #include "string.h"
 #include "tgt_hardware.h"
 
+#define KEY_DEBUG   //add by jay
+
 #ifdef KEY_DEBUG
 #define HAL_KEY_TRACE(n, s, ...)            TRACE(n, "[%u]" s, TICKS_TO_MS(hal_sys_timer_get()), ##__VA_ARGS__)
 #else
@@ -57,22 +59,25 @@ typedef uint32_t                            GPIO_MAP_T[GPIO_MAP_WORD_CNT];
 #endif
 
 #ifndef CFG_SW_KEY_LLPRESS_THRESH_MS
-#define CFG_SW_KEY_LLPRESS_THRESH_MS        5000
+//#define CFG_SW_KEY_LLPRESS_THRESH_MS        5000 // Disabled by Jay. powre_on
+#define CFG_SW_KEY_LLPRESS_THRESH_MS        2000
 #endif
 #ifndef CFG_SW_KEY_LPRESS_THRESH_MS
-#define CFG_SW_KEY_LPRESS_THRESH_MS         1500
+#define CFG_SW_KEY_LPRESS_THRESH_MS         1000//1500  // Modified by Jay.
 #endif
 #ifndef CFG_SW_KEY_REPEAT_THRESH_MS
-#define CFG_SW_KEY_REPEAT_THRESH_MS         500
+#define CFG_SW_KEY_REPEAT_THRESH_MS         1000//500  // Modified by Jay.
 #endif
 #ifndef CFG_SW_KEY_DBLCLICK_THRESH_MS
 #define CFG_SW_KEY_DBLCLICK_THRESH_MS       400
 #endif
 #ifndef CFG_SW_KEY_INIT_DOWN_THRESH_MS
+//#define CFG_SW_KEY_INIT_DOWN_THRESH_MS      200 // Disabled by Jay. powre_off
 #define CFG_SW_KEY_INIT_DOWN_THRESH_MS      200
 #endif
 #ifndef CFG_SW_KEY_INIT_LPRESS_THRESH_MS
-#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    3000
+//#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    3000 // Disabled by Jay. pairing
+#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    4000
 #endif
 #ifndef CFG_SW_KEY_INIT_LLPRESS_THRESH_MS
 #define CFG_SW_KEY_INIT_LLPRESS_THRESH_MS   10000
@@ -1189,7 +1194,7 @@ static void hal_key_boot_handler(void *param)
     if (pwr_key.debounce || pwr_key.dither || pwr_key.pressed) {
         bool pressed = hal_pwrkey_get_status();
 
-        //HAL_KEY_TRACE(5,"keyBoot: dbn=%d dither=%d pressed=%d/%d event=%d", pwr_key.debounce, pwr_key.dither, pwr_key.pressed, pressed, key_status.event);
+        HAL_KEY_TRACE(5,"keyBoot: dbn=%d dither=%d pressed=%d/%d event=%d", pwr_key.debounce, pwr_key.dither, pwr_key.pressed, pressed, key_status.event);
 
         if (pwr_key.debounce) {
             pwr_key.pressed = pressed;
@@ -1271,12 +1276,22 @@ int hal_key_open(int checkPwrKey, int (* cb)(uint32_t, uint8_t))
 
         cnt = 10;
         do {
-            hal_sys_timer_delay(MS_TO_TICKS(20));
+            hal_sys_timer_delay(MS_TO_TICKS(20)); // Modified by Jay, changed from 20 to 200.
             if (!hal_pwrkey_startup_pressed()) {
                 HAL_KEY_TRACE(0,"pwr_key init DITHERING");
                 nRet = -1;
                 goto _exit;
             }
+
+#ifdef CMT_008_CST812T_TOUCH
+            if(hal_gpio_pin_get_val((enum  HAL_GPIO_PIN_T)CST812T_NIRQ_PIN))
+            {
+			    HAL_KEY_TRACE(0,"pwr_key CST812T_NIRQ_PIN");
+                nRet = -1;
+                goto _exit;
+            }
+#endif /*CMT_008_CST812T_TOUCH*/
+
         } while (++i < cnt);
     }
 #endif
