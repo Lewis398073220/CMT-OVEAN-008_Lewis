@@ -62,7 +62,11 @@ extern "C" bool app_usbaudio_mode_on(void);
 #endif
 
 #ifndef APP_BATTERY_MIN_MV
+#ifdef CMT_008_BATTERY_LOW
+#define APP_BATTERY_MIN_MV (3320) //Modifed by Jay, changed from 3200 to 3320. 
+#else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_MIN_MV (3200)
+#endif /*CMT_008_BATTERY_LOW*/
 #endif
 
 #ifndef APP_BATTERY_MAX_MV
@@ -70,7 +74,12 @@ extern "C" bool app_usbaudio_mode_on(void);
 #endif
 
 #ifndef APP_BATTERY_PD_MV
+#ifdef CMT_008_BATTERY_LOW
+#define APP_BATTERY_PD_MV   (3200) //Modifed by Jay, changed from 3100 to 3200. 
+#else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_PD_MV   (3100)
+#endif /*CMT_008_BATTERY_LOW*/
+
 #endif
 
 #ifndef APP_BATTERY_CHARGE_TIMEOUT_MIN
@@ -223,8 +232,9 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     uint32_t meanBattVolt = 0;
     HAL_GPADC_MV_T vbat = volt;
     APP_BATTERY_TRACE(2,"%s %d",__func__, vbat);
+    TRACE(2,"volt:[%d],  volt:[%d], %s", vbat, vbat<<2, __func__);
  #ifdef CHARGER_SPICIAL_CHAN
-    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
+J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
 #else
     if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat<<2) <= APP_BATTERY_ERR_MV))
 #endif
@@ -250,20 +260,25 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
         meanBattVolt /= APP_BATTERY_STABLE_COUNT;
         if (app_battery_measure.cb)
         {
-            if (meanBattVolt>app_battery_measure.highvolt)
+            if (meanBattVolt>app_battery_measure.highvolt) //more than 4200mV.
             {
+                TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_OVERVOLT, meanBattVolt);
             }
+            /* BattVolt > 3200mV && BattVolt < 3320mV, now is low battery state. */
             else if((meanBattVolt>app_battery_measure.pdvolt) && (meanBattVolt<app_battery_measure.lowvolt))
             {
+                TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_UNDERVOLT, meanBattVolt);
             }
-            else if(meanBattVolt<app_battery_measure.pdvolt)
+            else if(meanBattVolt<app_battery_measure.pdvolt) //lenss than 3200mV.
             {
+                TRACE(2, "%s   PD   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_PDVOLT, meanBattVolt);
             }
             else
             {
+                TRACE(2, "%s   NORMAL   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_NORMAL, meanBattVolt);
             }
         }
@@ -321,7 +336,7 @@ static void app_battery_timer_handler(void const *param)
 {
 #ifdef CHARGER_1802
     charger_vbat_div_adc_enable(true);
-    hal_gpadc_open(HAL_GPADC_CHAN_5, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
+J    hal_gpadc_open(HAL_GPADC_CHAN_5, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
 #else
     hal_gpadc_open(app_vbat_ch, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
 #endif
@@ -382,12 +397,32 @@ int app_status_battery_report(uint8_t level)
 int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PRAMS prams)
 {
     int8_t level = 0;
+#ifdef CMT_008_BATTERY_LOW
+    static uint8_t battery_low_play_time = 0;
+
+#endif /*CMT_008_BATTERY_LOW*/
 
     switch (status)
     {
         case APP_BATTERY_STATUS_UNDERVOLT:
             TRACE(1,"UNDERVOLT:%d", prams.volt);
+#ifdef CMT_008_BATTERY_LOW
+            if(!battery_low_play_time && !app_battery_is_charging())
+            {
+                media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0);
+            }
+
+            battery_low_play_time ++;
+            /* About 1min to play once 'battery low' prompts, since every 10sec to handle once of battery timer. */
+            if(battery_low_play_time >= 7)
+            {
+                media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0);
+                battery_low_play_time = 1;
+            }
+#else /*CMT_008_BATTERY_LOW*/
             app_status_indication_set(APP_STATUS_INDICATION_CHARGENEED);
+#endif /*CMT_008_BATTERY_LOW*/
+
 #ifdef MEDIA_PLAYER_SUPPORT
 #if defined(IBRT)
 
@@ -425,6 +460,8 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
         case APP_BATTERY_STATUS_PDVOLT:
 #ifndef BT_USB_AUDIO_DUAL_MODE
             TRACE(1,"PDVOLT-->POWEROFF:%d", prams.volt);
+            TRACE(0,"Low battery POWEROFF");
+            media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0); //Add by Jay, play 'battery low' prompts.
             osTimerStop(app_battery_timer);
             app_shutdown();
 #endif
@@ -517,12 +554,12 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
 #endif
 #endif
 
- /* add by jay */
+            /* Add by Jay, disable charger pin, since now battery full. */
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
                 hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin);
             }
- /* add by jay end */
+            /* Add by Jay end. */
         }
     }
 
@@ -555,6 +592,7 @@ static int app_battery_handle_process(APP_MESSAGE_BODY *msg_body)
         switch (app_battery_measure.status)
         {
             case APP_BATTERY_STATUS_NORMAL:
+                TRACE(1,"++++++++ %s ",__func__);
                 app_battery_handle_process_normal((uint32_t)status, msg_prams);
 #if defined(CHIP_BEST1501P)
                 if(pmu_ana_volt_is_high() == false){
@@ -783,7 +821,7 @@ static int app_battery_charger_handle_process(void)
         }
         if (overvolt_full_charge_cnt>=APP_BATTERY_CHARGING_OVERVOLT_DEDOUNCE_CNT)
         {
-            //TRACE(0,"OVERVOLT-->FULL_CHARGING");
+            TRACE(0,"OVERVOLT-->FULL_CHARGING");
             nRet = -1;
             goto exit;
         }
