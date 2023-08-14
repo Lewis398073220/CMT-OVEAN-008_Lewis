@@ -1110,7 +1110,6 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     }
     ntc_capture_measure.temperature = ((int32_t)ntc_capture_measure.currvolt - NTC_CAPTURE_VOLTAGE_REF)/NTC_CAPTURE_TEMPERATURE_STEP + NTC_CAPTURE_TEMPERATURE_REF;
     pmu_ntc_capture_disable();
-    TRACE(3,"%s ad:%d temperature:%d ",__func__, ntc_capture_measure.currvolt, ntc_capture_measure.temperature);
 
 #ifdef CMT_008_NTC_DETECT
     static bool status_indication = FALSE;
@@ -1203,11 +1202,10 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
         {
             discharge_temperature_error_num=TEMPERATURE_ERROT_COUNT+1;
 
-            /*Todo: will enable. */
-            /*osTimerStop(app_battery_timer);
+            osTimerStop(app_battery_timer);
             osTimerStop(app_ntc_timer);
-            app_shutdown();*/
-            TRACE(0,"Jay");
+            TRACE(1, "[%s] shutdown", __func__);
+            app_shutdown();
         }
     }
 #endif /*CMT_008_NTC_DETECT*/
