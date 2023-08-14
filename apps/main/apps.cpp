@@ -1601,7 +1601,7 @@ int app_deinit(int deinit_case)
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio_standalone_locally(AUD_ID_POWER_OFF, 0);
 #endif
-        osDelay(2000); /* Modified by Jay, changed from 1000 to 2000. */
+        osDelay(2500); /* Modified by Jay, changed from 1000 to 2500. */
 #endif
         af_close();
 #if defined(__THIRDPARTY) && defined(__AI_VOICE__)
@@ -1649,6 +1649,7 @@ int app_init(void)
     app_bt_start_custom_function_in_bt_thread((uint32_t)0,
         0, (uint32_t)app_bt_global_handle_init);
     osDelay(500);
+    TRACE(1, " jay [%s] ", __func__);
     app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
 
     app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_32K);
@@ -1841,7 +1842,7 @@ void app_ibrt_init(void)
         app_ibrt_ui_init();
         app_ibrt_ui_test_init();
         app_ibrt_if_config_load(&config);
-        app_ibrt_customif_ui_start();
+j        app_ibrt_customif_ui_start();
 #ifdef IBRT_SEARCH_UI
         app_tws_ibrt_start(&config, true);
         app_ibrt_search_ui_init(false,IBRT_NONE_EVENT);
@@ -1876,7 +1877,7 @@ void app_ibrt_init(void)
 
 #if defined(IBRT_UI_V2)
         app_ui_init();
-        app_ibrt_customif_ui_start();
+        app_ibrt_customif_ui_start(); //Jay
 #ifdef APP_BT_SPEAKER
         app_speaker_init();
 #endif
@@ -1918,6 +1919,7 @@ void app_ibrt_init(void)
         #endif
     #elif defined(POWER_ON_ENTER_BOTH_SCAN_MODE)
             // enter both scan mode
+            TRACE(1, " jay [%s] ", __func__);
             btif_me_set_accessible_mode(BTIF_BAM_GENERAL_ACCESSIBLE, NULL);
     #endif
 #endif
@@ -2597,6 +2599,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
         }
 #endif
 #else
+        TRACE(1, " jay [%s] ", __func__);
         app_bt_accessmode_set(BTIF_BAM_NOT_ACCESSIBLE);
 #endif
 #endif
@@ -2712,11 +2715,20 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
                     osDelay(100);
                     app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
                     osDelay(300);*/
+
+                    media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
+                    //btif_me_set_accessible_mode(BTIF_BAM_GENERAL_ACCESSIBLE, NULL);
+                    //app_ibrt_if_init_open_box_state_for_evb();
+
+                    //hal_sw_bootmode_clear(HAL_SW_BOOTMODE_REBOOT);
+                    //app_factorymode_enter();
+
                     app_ibrt_if_enter_freeman_pairing();
+                    //app_bt_accessmode_set_req(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
                     /* Add by Jay, end */
                     app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN); //pairing LED indication
 #ifdef MEDIA_PLAYER_SUPPORT
-                    media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
+                    //media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
 #endif
 #ifndef BT_BUILD_WITH_CUSTOMER_HOST
 #if defined( __BTIF_EARPHONE__)
@@ -2726,7 +2738,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
                         app_ibrt_enter_limited_mode();
 #endif
 #else
-                    app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
+j                    app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
 #endif
 #ifdef GFPS_ENABLED
                     app_enter_fastpairing_mode();
@@ -2773,6 +2785,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
                     //app_ibrt_ui_event_entry(IBRT_FETCH_OUT_EVENT);
 #endif
 #else
+                    TRACE(1, " jay [%s] ", __func__);
                     app_bt_accessmode_set(BTIF_BAM_NOT_ACCESSIBLE);
 #endif
 #endif
@@ -2827,6 +2840,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
         app_user_event_open_module();
 #endif /*__USE_3_5JACK_CTR__*/
 
+        osDelay(1000);
         app_anc_switch(APP_ANC_MODE1); /* Add by Jay, The ANC mode is turn on at power on state. */
 
         }else{

@@ -289,6 +289,7 @@ static bool app_speaker_ble_confirm_peer_device_match_success(uint8_t *peer_devi
     bool ret = false;
     uint8_t local_factory_bt_addr[6] = {0};
     factory_section_original_btaddr_get(local_factory_bt_addr);
+    LOG_I("   jay [ %s ] ", __func__);
     if (memcmp(local_factory_bt_addr, local_device, 6) == 0)
     {
         ret = true;
@@ -637,6 +638,7 @@ void app_speaker_ble_adv_data_start_tws_discovery_ind(void)
 
     //fill the device infor adv data
     factory_section_original_btaddr_get(ble_scan_data_req->device_info.bt_mac_addr);
+    LOG_I("   jay [ %s ] ", __func__);
 
     ble_scan_data_req->crc_check = crc8_cal(&g_speaker_adv_data_info[2], sizeof(SPEAKER_BLE_ADV_DATA_TWS_DISCOVE_IND_T)-1);
 
@@ -662,6 +664,7 @@ void app_speaker_ble_adv_data_start_tws_discovery_cfm(void)
 
     //fill the local device info adv data
     factory_section_original_btaddr_get(ble_adv_data_cfm->local_device_info.bt_mac_addr);
+    LOG_I("   jay [ %s ] ", __func__);
 
     //fill the local connection info adv data
     ibrt_mobile_info_t *p_mobile_info = app_ibrt_conn_get_mobile_info_ext();

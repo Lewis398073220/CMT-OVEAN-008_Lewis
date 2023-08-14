@@ -207,7 +207,7 @@ void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
                 LOG_I("first blood.");
                 //app_ibrt_middleware_handle_click();
 
-         #if 1 //Add by jay, to test line_in of button switch.
+         #if 0 //Add by jay, to test line_in of button switch.
                 static bool flag = FALSE;
                 if(!flag)
                 {

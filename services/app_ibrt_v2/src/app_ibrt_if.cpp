@@ -266,6 +266,7 @@ void app_ibrt_if_start_tws_pairing(ibrt_role_e role, uint8_t* peerAddr)
 
     bt_bdaddr_t local_addr;
     factory_section_original_btaddr_get(local_addr.address);
+    LOG_I("   jay [ %s ] ", __func__);
     if (IBRT_MASTER == role)
     {
         app_ibrt_if_tws_free_pairing_entry(role, local_addr.address,
@@ -294,7 +295,9 @@ void app_ibrt_if_update_tws_pairing_info(ibrt_role_e role, uint8_t* peerAddr)
     nv_record_env_set(nvrecord_env);
 
     bt_bdaddr_t local_addr;
+    //LOG_I("   jay [ %s ] ", __func__);
     factory_section_original_btaddr_get(local_addr.address);
+    LOG_I("   jay [ %s ] ", __func__);
     bool isRightMasterSidePolicy = true;
 #ifdef IBRT_RIGHT_MASTER
     isRightMasterSidePolicy = true;
@@ -2344,6 +2347,7 @@ bool app_ibrt_if_post_custom_reboot_handler(void)
     if (hal_sw_bootmode_get()&HAL_SW_BOOTMODE_CUSTOM_OP1_AFTER_REBOOT)
     {
         hal_sw_bootmode_clear(HAL_SW_BOOTMODE_CUSTOM_OP1_AFTER_REBOOT);
+        LOG_I("%s [Enter pairing jay] ", __func__);
         app_ibrt_if_enter_freeman_pairing();
         return false;
     }

@@ -70,6 +70,7 @@ ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_search_dev", "bt_search_dev", b
 // set device discoverable/conncetable mode
 static void bts_bt_set_access_mode_cmd(int argc, char *argv[])
 {
+    TRACE(1, " jay [%s] ", __func__);
     uint32_t access_mode = atoi(argv[1]);
     app_bt_accessmode_set(access_mode);
     eshell_putstring_nl("bts_bt_set_access_mode_cmd scan_mode=%d", access_mode);

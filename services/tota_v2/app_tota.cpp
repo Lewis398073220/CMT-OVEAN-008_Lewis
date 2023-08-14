@@ -17,7 +17,11 @@
 #include "hal_timer.h"
 #include "app_audio.h"
 #include "app_utils.h"
+#ifndef CMT_008_SPP_TOTA_V2
 #include "hal_aud.h"
+#else /*CMT_008_SPP_TOTA_V2*/
+#include "app_anc.h"
+#endif /*CMT_008_SPP_TOTA_V2*/
 #include "hal_norflash.h"
 #include "pmu.h"
 #include "string.h"
@@ -140,7 +144,9 @@ static void s_app_tota_connected();
 static void s_app_tota_disconnected();
 static void s_app_tota_tx_done();
 static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len);
-
+#ifdef CMT_008_SPP_TOTA_V2
+static void app_tota_vendor_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptrParam, uint32_t paramLen);
+#endif
 
 static void s_app_tota_connected()
 {
@@ -337,6 +343,22 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
         return;
     }
 
+#ifdef CMT_008_SPP_TOTA_V2
+    uint16_t i=0;
+    for(i=0; i<len; i++)
+    {
+        TOTA_LOG_DBG(1,"spp_data = 0x%x", buf[i]);
+    }
+
+    if(buf[0] == 0x92 && buf[1] == 0x00 && len == 0x06)
+    {
+        if(buf[2] != 0x00 || buf[3] != 0x02)
+            return;
+        app_tota_vendor_cmd_handler(OP_TOTA_CMT008_SPP_TEST_CMD, buf, (uint32_t) len);
+        return;
+    }
+#endif /*CMT_008_SPP_TOTA_V2*/
+
     int ret = 0;
 #ifdef BUDSODIN2_TOTA
     //hijack the customers tota data
@@ -352,7 +374,7 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
     while (TOTA_PACKET_VERIFY_SIZE < queueLen)
     {
         TOTA_LOG_DBG(1,"queueLen = 0x%x", queueLen);
-        ret = app_tota_rx_unpack(buf, queueLen);
+        ret = app_tota_rx_unpack(buf, queueLen); //jay
         if (ret)
         {
             break;
@@ -430,7 +452,7 @@ static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen)
         case APP_TOTA_VIA_SPP:
             return app_spp_tota_send_data(pdata, dataLen);
 #ifdef BLE_TOTA_ENABLED
-        case APP_TOTA_VIA_NOTIFICATION:
+j        case APP_TOTA_VIA_NOTIFICATION:
             return bes_ble_tota_send_notification(ble_tota_env.connectionIndex, pdata, dataLen);
 #endif
         default:
@@ -702,6 +724,193 @@ static void app_tota_demo_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptr
             break;
     }
 }
+
+#ifdef CMT_008_SPP_TOTA_V2
+
+#define MIC_SELECT_TEST   0x50
+#define ANC_MODE_TEST     0x51
+#define FUNCTION_TEST     0x52
+
+typedef enum 
+{
+    TALK_MIC = 1,
+    L_FF_MIC,
+    R_FF_MIC,
+    L_FB_MIC,
+    R_FB_MIC,
+    MIC_RESET,
+    ALL_SELECT_MIC = 0xFF
+}MIC_SELECT_E;
+
+typedef enum 
+{
+    ANC_MODE_CMD = 1,
+    AWARENESS_MODE_CMD,
+    ANC_OFF_CMD,
+    ANC_NONE = 0xFF
+}ANC_MODE_E;
+
+typedef enum 
+{
+    POWER_OFF_CMD = 1,
+    DISCONNECT_BT_CMD,
+    ANC_WIRELESS_DEBUG_EN,
+    ANC_WIRELESS_DEBUG_DIS,
+    FUNCTION_TEST_NONE = 0xFF
+}FUNCTION_TEST_E;
+
+static AUD_IO_PATH_T mic_select_spp_cmd = AUD_INPUT_PATH_MAINMIC;
+
+AUD_IO_PATH_T current_select_mic(void)
+{
+    return mic_select_spp_cmd;
+}
+
+static bool app_tota_send_response(APP_TOTA_CMD_RET_STATUS_E rsp_status, uint8_t * pdata, uint16_t dataLen)
+{
+    TOTA_LOG_DBG(0, "Response send data");
+
+    /* Disable by Jay, only response data as same the RX.*/
+    //dataLen = app_tota_tx_pack(pdata, dataLen);
+    if (0 == dataLen)
+    {
+        return false;
+    }
+
+    /* This is response one byte of status. */
+    pdata[dataLen] = rsp_status;
+    dataLen ++;
+
+    switch (tota_get_connect_path())
+    {
+        case APP_TOTA_VIA_SPP:
+            return app_spp_tota_send_data(pdata, dataLen);
+
+        default:
+            return false;
+    }
+}
+
+static void app_tota_vendor_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptrParam, uint32_t paramLen)
+{
+    TOTA_LOG_DBG(2,"Func code 0x%x, param len %d", funcCode, paramLen);
+    TOTA_LOG_DBG(0,"Param content:");
+    DUMP8("%02x ", ptrParam, paramLen);
+
+    if(funcCode != OP_TOTA_CMT008_SPP_TEST_CMD)
+        return;
+
+    switch (funcCode)
+    {
+        case OP_TOTA_CMT008_SPP_TEST_CMD:
+            switch (ptrParam[4])
+            {
+                case MIC_SELECT_TEST:
+                    switch (ptrParam[5])
+                    {
+                        case TALK_MIC:
+                            TOTA_LOG_DBG(0,"TALK MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_MAINMIC;
+                        break;
+                        case L_FF_MIC:
+                            TOTA_LOG_DBG(0,"L FF MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_LFFMIC_SPP;
+                        break;
+                        case R_FF_MIC:
+                            TOTA_LOG_DBG(0,"R FF MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_RFFMIC_SPP;
+                        break;
+                        case L_FB_MIC:
+                            TOTA_LOG_DBG(0,"L FB MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_LFBMIC_SPP;
+                        break;
+                        case R_FB_MIC:
+                            TOTA_LOG_DBG(0,"R FB MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_RFBMIC_SPP;
+                        break;
+                        case MIC_RESET:
+                            TOTA_LOG_DBG(0,"Reset into TALK MIC");
+                            mic_select_spp_cmd = AUD_INPUT_PATH_MAINMIC;
+                        break;
+                        default:
+                            TOTA_LOG_DBG(0,"Unsupported command ID of 'Mic select'");
+                            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                            return;
+                    }
+                break;
+
+                case ANC_MODE_TEST:
+                    switch (ptrParam[5])
+                    {
+                        case ANC_MODE_CMD:
+                            TOTA_LOG_DBG(0,"'ANC MODE'");
+                            app_anc_switch(APP_ANC_MODE1);
+                        break;
+                        case AWARENESS_MODE_CMD:
+                            TOTA_LOG_DBG(0,"'Awareness MODE'");
+                            app_anc_switch(APP_ANC_MODE2);
+                        break;
+                        case ANC_OFF_CMD:
+                            TOTA_LOG_DBG(0,"'ANC OFF'");
+                            app_anc_switch(APP_ANC_MODE_OFF);
+                        break;
+                        default:
+                            TOTA_LOG_DBG(0,"Unsupported command ID of 'ANC mode test'");
+                            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                            return;
+                    }
+                break;
+
+                case FUNCTION_TEST:
+                    switch (ptrParam[5])
+                    {
+                        case POWER_OFF_CMD:
+                            TOTA_LOG_DBG(0,"'Shut down'");
+                            /* Send response before asking to shutdown, to ensure response gets sent. */
+                            app_tota_send_response(TOTA_NO_ERROR, ptrParam, paramLen);
+                            app_shutdown();
+                            return;
+                        break;
+                        case DISCONNECT_BT_CMD:
+                            TOTA_LOG_DBG(0,"'Disconnect BT'");
+                            /* Send response before asking to disconnect, to ensure response gets sent. */
+                            app_tota_send_response(TOTA_NO_ERROR, ptrParam, paramLen);
+                            app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+                            app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+                            return;
+                        break;
+                        case ANC_WIRELESS_DEBUG_EN:
+                            TOTA_LOG_DBG(0,"ANC_WIRELESS_DEBUG_EN");
+                            // TODO: this whether need? to check it. Add by Jay.
+                            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                        break;
+                        case ANC_WIRELESS_DEBUG_DIS:
+                            TOTA_LOG_DBG(0,"ANC_WIRELESS_DEBUG_DIS");
+                            // TODO: this whether need? to check it. Add by Jay.
+                            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                        break;
+                        default:
+                            TOTA_LOG_DBG(0,"Unsupported command ID of 'function test'");
+                            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                            return;
+                    }
+                break;
+
+                default:
+                    TOTA_LOG_DBG(0,"Invalid command");
+                    app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+                    return;
+            }
+            app_tota_send_response(TOTA_NO_ERROR, ptrParam, paramLen);
+        break;
+
+        default:
+            TOTA_LOG_DBG(0,"Unsupported command ID of 'ANC mode test'");
+            app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
+            return;
+    }
+}
+#endif /*CMT_008_SPP_TOTA_V2*/
 
 TOTA_COMMAND_TO_ADD(OP_TOTA_STRING, app_tota_demo_cmd_handler, false, 0, NULL );
 TOTA_COMMAND_TO_ADD(OP_TOTA_DEMO_CMD, app_tota_demo_cmd_handler, false, 0, NULL );

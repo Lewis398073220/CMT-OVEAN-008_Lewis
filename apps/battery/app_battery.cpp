@@ -232,7 +232,7 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     uint32_t meanBattVolt = 0;
     HAL_GPADC_MV_T vbat = volt;
     APP_BATTERY_TRACE(2,"%s %d",__func__, vbat);
-    TRACE(2,"volt:[%d],  volt:[%d], %s", vbat, vbat<<2, __func__);
+    TRACE(2,"volt:[%d],  volt<<2:[%d], %s", vbat, vbat<<2, __func__);
  #ifdef CHARGER_SPICIAL_CHAN
 J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
 #else
@@ -1204,9 +1204,9 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
             discharge_temperature_error_num=TEMPERATURE_ERROT_COUNT+1;
 
             /*Todo: will enable. */
-            osTimerStop(app_battery_timer);
+            /*osTimerStop(app_battery_timer);
             osTimerStop(app_ntc_timer);
-            app_shutdown();
+            app_shutdown();*/
             TRACE(0,"Jay");
         }
     }

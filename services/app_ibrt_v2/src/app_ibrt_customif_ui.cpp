@@ -211,17 +211,21 @@ void app_ibrt_customif_pairing_mode_exit()
     }
 
     g_device_id_need_resume_sco = BT_DEVICE_INVALID_ID;
+
+    LOG_I("  exit pairing:[%d], [%s]",p_app_ui_config->enter_pairing_on_mobile_disconnect, __func__);
 }
 
 void app_ibrt_customif_global_state_callback(ibrt_global_state_change_event *state)
 {
     LOG_I("custom_ui global_status changed = %d", state->state);
-
+    app_ui_config_t* p_app_ui_config = app_ui_get_config();
     switch (state->state)
     {
         case IBRT_BLUETOOTH_ENABLED:
+            LOG_I("  ENA pairing:[%d], [%s]",p_app_ui_config->enter_pairing_on_mobile_disconnect, __func__);
             break;
         case IBRT_BLUETOOTH_DISABLED:
+            LOG_I("  DIS pairing:[%d], [%s]",p_app_ui_config->enter_pairing_on_mobile_disconnect, __func__);
             break;
         default:
             break;
@@ -1250,7 +1254,7 @@ int app_ibrt_customif_ui_start(void)
 
     //freeman mode config, default should be false
 #ifdef FREEMAN_ENABLED_STERO
-    config.freeman_enable                           = true;
+    config.freeman_enable                           = true; //= true; //Modifed by Jay
 #else
     config.freeman_enable                           = false;
 #endif
@@ -1439,7 +1443,7 @@ int app_ibrt_customif_ui_start(void)
     app_ibrt_if_config(&config);
 
 #ifdef BT_ALWAYS_IN_DISCOVERABLE_MODE
-    btif_me_configure_keeping_both_scan(true);
+j    btif_me_configure_keeping_both_scan(true);
 #endif
 
     app_spp_is_connected_register(app_ibrt_customif_set_profile_delaytime_on_spp_connect);
@@ -1447,6 +1451,8 @@ int app_ibrt_customif_ui_start(void)
 #ifdef __IAG_BLE_INCLUDE__
     app_ble_custom_init();
 #endif /*__IAG_BLE_INCLUDE__*/
+
+LOG_I("  pairing:[%d], [%s]",config.enter_pairing_on_mobile_disconnect, __func__);
     return 0;
 }
 #endif // IBRT_UI_V2

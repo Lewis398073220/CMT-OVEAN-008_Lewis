@@ -96,10 +96,10 @@ ifeq ($(PLAYBACK_USE_I2S),1)
 KBUILD_CPPFLAGS += -DPLAYBACK_USE_I2S
 endif
 
-#export I2S_MCLK_FROM_I2S ?= 1
-#ifeq ($(I2S_MCLK_FROM_I2S),1)
-#KBUILD_CPPFLAGS += -DI2S_MCLK_FROM_I2S
-#//endif
+export CMT_008_SPP_TOTA_V2 ?= 1
+ifeq ($(CMT_008_SPP_TOTA_V2),1)
+KBUILD_CPPFLAGS += -DCMT_008_SPP_TOTA_V2
+endif
 
 
 #### Add by Jay, end. #####

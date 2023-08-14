@@ -182,6 +182,11 @@ int sidetone_opened=0;
 #include "ree_audio_process.h"
 #endif
 #endif
+
+#ifdef CMT_008_SPP_TOTA_V2
+#include "app_tota.h"
+#endif /*CMT_008_SPP_TOTA_V2*/
+
 #include "app_user.h"            //add by jay
 //#include "app_audio_control.h"   //add by jay
 
@@ -6061,7 +6066,7 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 
         // codec:mic
 #if defined(ANC_ASSIST_ENABLED)
-        stream_cfg.channel_map  = (enum AUD_CHANNEL_MAP_T)app_anc_assist_get_mic_ch_map(AUD_INPUT_PATH_MAINMIC);
+j        stream_cfg.channel_map  = (enum AUD_CHANNEL_MAP_T)app_anc_assist_get_mic_ch_map(AUD_INPUT_PATH_MAINMIC);
         sco_cap_chan_num        = (enum AUD_CHANNEL_NUM_T)app_anc_assist_get_mic_ch_num(AUD_INPUT_PATH_MAINMIC);
 #if defined(ASSIST_LOW_RAM_MOD) && !defined(ANC_ASSIST_UNUSED_ON_PHONE_CALL)
         anc_assist_resample_init(sample_rate, app_anc_assist_get_frame_len(), pool_allocator(), sco_cap_chan_num);
@@ -6069,7 +6074,29 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
         memset(anc_assist_resample_buf, 0, speech_get_codecpcm_buf_len(sample_rate / 2, sco_cap_chan_num, SPEECH_SCO_FRAME_MS));
 #endif
 #endif
+#ifdef CMT_008_SPP_TOTA_V2
+        switch(current_select_mic())
+		{
+            case AUD_INPUT_PATH_LFFMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_LFFMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_RFFMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_RFFMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_LFBMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_LFBMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_RFBMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_RFBMIC_SPP;
+            break;        
+			case AUD_INPUT_PATH_MAINMIC:
+            default:
+				stream_cfg.io_path = AUD_INPUT_PATH_MAINMIC;
+				break;
+        }
+#else /*CMT_008_SPP_TOTA_V2*/
         stream_cfg.io_path = AUD_INPUT_PATH_MAINMIC;
+#endif /*CMT_008_SPP_TOTA_V2*/
         stream_cfg.channel_num = sco_cap_chan_num;
         stream_cfg.data_size = speech_get_codecpcm_buf_len(sample_rate, stream_cfg.channel_num, SPEECH_SCO_FRAME_MS);
 

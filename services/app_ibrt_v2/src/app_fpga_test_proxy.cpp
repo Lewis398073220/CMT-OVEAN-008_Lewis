@@ -69,11 +69,13 @@ void app_fpga_proxy_w4_mobile_connect(void)
 {
     if(app_ibrt_conn_is_nv_master())
     {
+         LOG_I(" jay [%s] ", __func__);
          btif_me_set_accessible_mode(BTIF_BAM_GENERAL_ACCESSIBLE,NULL);
     }
 
     if(app_ibrt_conn_is_nv_slave())
     {
+        LOG_I(" jay [%s] ", __func__);
          btif_me_set_accessible_mode(BTIF_BAM_NOT_ACCESSIBLE,NULL);
     }
 }

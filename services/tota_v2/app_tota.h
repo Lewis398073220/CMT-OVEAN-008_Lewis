@@ -17,7 +17,9 @@
 #define __APP_TOTA_H__
 
 #include "app_tota_cmd_code.h"
-
+#ifdef CMT_008_SPP_TOTA_V2
+#include "hal_aud.h"
+#endif /*CMT_008_SPP_TOTA_V2*/
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +72,11 @@ void app_ota_over_tota_receive_data(uint8_t* ota_packet, uint32_t ota_packet_len
 void ota_spp_tota_send_data(uint8_t* ptrData, uint32_t length);
 void ota_tota_send_notification(uint8_t* ptrData, uint32_t length);
 #endif
+
+#ifdef CMT_008_SPP_TOTA_V2
+AUD_IO_PATH_T current_select_mic(void);
+#endif /*CMT_008_SPP_TOTA_V2*/
+
 #ifdef __cplusplus
 }
 #endif

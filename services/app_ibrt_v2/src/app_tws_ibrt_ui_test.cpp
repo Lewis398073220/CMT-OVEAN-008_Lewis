@@ -198,6 +198,7 @@ static void app_ibrt_raw_ui_test_load_from_bt_pair_list(void)
 
     nv_record_env_get(&nvrecord_env);
     factory_section_original_btaddr_get(localAddr);
+    LOG_I("   jay [ %s ] ", __func__);
 
     bool isRightMasterSidePolicy = true;
 #ifdef IBRT_RIGHT_MASTER
@@ -285,6 +286,7 @@ int app_ibrt_ui_v2_test_config_load(void *config)
 
     nv_record_env_get(&nvrecord_env);
     factory_section_original_btaddr_get(ibrt_config->local_addr.address);
+    LOG_I("   jay [ %s ] ", __func__);
 
 #if !defined(FREE_TWS_PAIRING_ENABLED)
     // nv record content has been updated in app_ibrt_raw_ui_test_load_from_bt_pair_list
@@ -1839,10 +1841,12 @@ void app_ibrt_mgr_pairing_mode_test(void)
 #if !defined(FREE_TWS_PAIRING_ENABLED)
     app_ibrt_if_init_open_box_state_for_evb();
     app_ibrt_if_event_entry(APP_UI_EV_TWS_PAIRING);
+    LOG_I("   jay [ %s ] ", __func__);
 #else
     app_ibrt_if_init_open_box_state_for_evb();
     uint8_t btAddr[6];
     factory_section_original_btaddr_get(btAddr);
+    LOG_I("   jay [ %s ] ", __func__);
     btAddr[0] ^= 0x01;
     // the bit 0 of the bt address's first byte clarifies the tws addresses
     // master if it's 1, slave if it's 0
@@ -1866,6 +1870,7 @@ static void power_on_pairing_delay_timer_handler(void const *para)
 
 void app_ibrt_start_power_on_freeman_pairing(void)
 {
+    LOG_I("%s [Enter pairing jay] ", __func__);
     app_ibrt_if_enter_freeman_pairing();
 }
 

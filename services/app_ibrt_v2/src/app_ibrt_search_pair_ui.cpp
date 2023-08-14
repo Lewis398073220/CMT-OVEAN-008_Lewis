@@ -201,6 +201,7 @@ void app_bt_manager_ibrt_role_process(const btif_event_t *Event)
                 if(p_ibrt_ctrl->nv_role ==IBRT_UNKNOW)
                     factory_section_original_btaddr_get(p_ibrt_ctrl->local_addr.address);
 
+                LOG_I("   jay [ %s ] ", __func__);
                 LOG_I("local:%x remd:%x",p_ibrt_ctrl->local_addr.address[5],p_remote_dev_addr->address[5]);
                 if((p_ibrt_ctrl->local_addr.address[3]==p_remote_dev_addr->address[3])
                    &&(p_ibrt_ctrl->local_addr.address[4]==p_remote_dev_addr->address[4])
@@ -288,7 +289,7 @@ void app_bt_inquiry_call_back(const btif_event_t* event)
     //app_ibrt_ui_t *p_ibrt_ui = app_ibrt_ui_get_ctx();
     ibrt_ctrl_t *p_ibrt_ctrl = app_ibrt_if_get_bt_ctrl_ctx();
     factory_section_original_btaddr_get(p_ibrt_ctrl->local_addr.address);
-
+    LOG_I("   jay [ %s ] ", __func__);
 
     switch(btif_me_get_callback_event_type(event))
     {

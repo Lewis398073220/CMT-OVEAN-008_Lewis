@@ -1926,6 +1926,7 @@ void gfps_sass_del_dev_handler(bt_bdaddr_t *addr, uint8_t reason)
     {
         TRACE(1,"%s don't update last dev", __func__);
     }
+    TRACE(1, " jay [%s] ", __func__);
     app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
     gfps_sass_check_if_need_reconnect();
     TRACE(2,"%s connNum: %d", __func__, sassInfo.connNum);

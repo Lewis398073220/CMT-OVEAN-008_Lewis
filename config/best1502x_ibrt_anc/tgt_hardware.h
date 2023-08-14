@@ -178,7 +178,11 @@ extern const struct HAL_KEY_GPIOKEY_CFG_T cfg_hw_gpio_key_cfg[CFG_HW_GPIOKEY_NUM
 #define ANC_VMIC_CFG                        (AUD_VMIC_MAP_VMIC1) /* Modified by Jay, changed from 'AUD_VMIC_MAP_VMIC2' to 'AUD_VMIC_MAP_VMIC1' */
 
 // audio codec
+#ifdef CMT_008_SPP_TOTA_V2
+#define CFG_HW_AUD_INPUT_PATH_NUM           (10)
+#else /*CMT_008_SPP_TOTA_V2*/
 #define CFG_HW_AUD_INPUT_PATH_NUM           (6)
+#endif /*CMT_008_SPP_TOTA_V2*/
 extern const struct AUD_IO_PATH_CFG_T cfg_audio_input_path_cfg[CFG_HW_AUD_INPUT_PATH_NUM];
 
 #if defined(FREEMAN_ENABLED_STERO)

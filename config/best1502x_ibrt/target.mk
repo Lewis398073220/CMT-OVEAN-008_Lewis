@@ -313,7 +313,7 @@ INTERACTION ?= 0
 
 INTERACTION_FASTPAIR ?= 0
 
-BT_ONE_BRING_TWO ?= 0
+BT_ONE_BRING_TWO ?= 0  ###Enable Multipoint function, add by Jay.
 
 DSD_SUPPORT ?= 0
 
