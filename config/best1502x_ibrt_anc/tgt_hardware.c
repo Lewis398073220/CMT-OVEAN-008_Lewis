@@ -2498,3 +2498,11 @@ const SpectrumFixConfig audio_spectrum_cfg = {
     .freq_list = {200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800},
 };
 
+#ifdef CMT_008_SPP_GET_FW
+static const char device_firmware_version[] = REVISION_FW;
+
+const char * app_tota_get_fw_version(void)
+{
+    return device_firmware_version;
+}
+#endif /*CMT_008_SPP_GET_FW*/

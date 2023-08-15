@@ -182,6 +182,8 @@ typedef enum
     TOTA_MIC_SWITCH_FAILED,
     TOTA_EQ_GET_FAILED,
     TOTA_RECEIVE_STREAM_TIMEOUT,
+
+    TOTA_CMT_008_NOT_NEED_STATUS, /* Add by Jay */
     // TO ADD: new return status
 } APP_TOTA_CMD_RET_STATUS_E;
 

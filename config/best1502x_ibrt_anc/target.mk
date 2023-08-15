@@ -101,6 +101,11 @@ ifeq ($(CMT_008_SPP_TOTA_V2),1)
 KBUILD_CPPFLAGS += -DCMT_008_SPP_TOTA_V2
 endif
 
+export CMT_008_SPP_GET_FW ?= 1
+ifeq ($(CMT_008_SPP_GET_FW),1)
+KBUILD_CPPFLAGS += -DCMT_008_SPP_GET_FW
+endif
+
 
 #### Add by Jay, end. #####
 

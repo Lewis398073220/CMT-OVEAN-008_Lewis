@@ -373,15 +373,16 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
     uint16_t queueLen= tota_rx_queue_length();
     while (TOTA_PACKET_VERIFY_SIZE < queueLen)
     {
-        TOTA_LOG_DBG(1,"queueLen = 0x%x", queueLen);
+        TOTA_LOG_DBG(1,"queueLen_1 = 0x%x", queueLen);
         ret = app_tota_rx_unpack(buf, queueLen); //jay
+        TOTA_LOG_DBG(1," ret: [%d] ", ret);
         if (ret)
         {
             break;
         }
         queueLen= tota_rx_queue_length();
 
-        TOTA_LOG_DBG(1,"queueLen = 0x%x",queueLen);
+        TOTA_LOG_DBG(1,"queueLen_2 = 0x%x",queueLen);
     }
 
 }
@@ -730,6 +731,8 @@ static void app_tota_demo_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptr
 #define MIC_SELECT_TEST   0x50
 #define ANC_MODE_TEST     0x51
 #define FUNCTION_TEST     0x52
+#define LEN_OF_ARRAY      512 /* Copy from 'LEN_OF_IMAGE_TAIL_TO_FINDKEY_WORD'*/
+
 
 typedef enum 
 {
@@ -756,10 +759,14 @@ typedef enum
     DISCONNECT_BT_CMD,
     ANC_WIRELESS_DEBUG_EN,
     ANC_WIRELESS_DEBUG_DIS,
+    GET_FIRMWARE_VER,
+    GET_FIRMWARE_VER_BUILD_DATE,
     FUNCTION_TEST_NONE = 0xFF
 }FUNCTION_TEST_E;
 
 static AUD_IO_PATH_T mic_select_spp_cmd = AUD_INPUT_PATH_MAINMIC;
+static const char* image_info_build_data = "BUILD_DATE=";
+extern const char sys_build_info[];
 
 AUD_IO_PATH_T current_select_mic(void)
 {
@@ -777,9 +784,12 @@ static bool app_tota_send_response(APP_TOTA_CMD_RET_STATUS_E rsp_status, uint8_t
         return false;
     }
 
-    /* This is response one byte of status. */
-    pdata[dataLen] = rsp_status;
-    dataLen ++;
+    if(rsp_status != TOTA_CMT_008_NOT_NEED_STATUS)
+    {
+        /* This is response one byte of status. */
+        pdata[dataLen] = rsp_status;
+        dataLen ++;
+    }
 
     switch (tota_get_connect_path())
     {
@@ -789,6 +799,61 @@ static bool app_tota_send_response(APP_TOTA_CMD_RET_STATUS_E rsp_status, uint8_t
         default:
             return false;
     }
+}
+
+static int32_t find_key_word(uint8_t* targetArray, uint32_t targetArrayLen,
+    uint8_t* keyWordArray,
+    uint32_t keyWordArrayLen)
+{
+    if ((keyWordArrayLen > 0) && (targetArrayLen >= keyWordArrayLen))
+    {
+        uint32_t index = 0, targetIndex = 0;
+        for (targetIndex = 0;targetIndex < targetArrayLen;targetIndex++)
+        {
+            for (index = 0;index < keyWordArrayLen;index++)
+            {
+                if (targetArray[targetIndex + index] != keyWordArray[index])
+                {
+                    break;
+                }
+            }
+
+            if (index == keyWordArrayLen)
+            {
+                return targetIndex;
+            }
+        }
+
+        return -1;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+static APP_TOTA_CMD_RET_STATUS_E app_tota_get_buidl_data(uint8_t *buildData) 
+{
+    if(NULL == buildData)
+    {
+        return TOTA_CMD_HANDLING_FAILED;
+    }
+
+    int32_t found = find_key_word((uint8_t*)&sys_build_info,\
+                                    LEN_OF_ARRAY,\
+                                    (uint8_t*)image_info_build_data,\
+                                    strlen(image_info_build_data));
+
+    if (-1 == found)
+    {
+        return TOTA_CMD_HANDLING_FAILED;
+    }
+
+    memcpy(buildData, (uint8_t*)&sys_build_info+found+strlen(image_info_build_data), 20);
+
+    TRACE(1,"[%s]buildData is 0x%s", __func__, buildData);
+
+    return TOTA_NO_ERROR;
 }
 
 static void app_tota_vendor_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* ptrParam, uint32_t paramLen)
@@ -889,6 +954,27 @@ static void app_tota_vendor_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* p
                             // TODO: this whether need? to check it. Add by Jay.
                             app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
                         break;
+#ifdef CMT_008_SPP_GET_FW
+                        case GET_FIRMWARE_VER:
+                            {
+                                TOTA_LOG_DBG(0,"'Get Firmware version'");
+                                uint16_t data_len = strlen(app_tota_get_fw_version());
+                                app_tota_send_response(TOTA_CMT_008_NOT_NEED_STATUS, (uint8*) app_tota_get_fw_version(), data_len);
+                                return;
+                            }
+                        break;
+                        case GET_FIRMWARE_VER_BUILD_DATE:
+                            {
+                                TOTA_LOG_DBG(0,"'Get Firmware version build date'");
+                                uint8_t build_date[32];
+                                if(app_tota_get_buidl_data(build_date) == TOTA_NO_ERROR)
+                                    app_tota_send_response(TOTA_CMT_008_NOT_NEED_STATUS, build_date, sizeof(build_date));
+                                else
+                                    app_tota_send_response(TOTA_CMD_HANDLING_FAILED, ptrParam, paramLen);
+                                return;
+                            }
+                        break;
+#endif /*CMT_008_SPP_GET_FW*/
                         default:
                             TOTA_LOG_DBG(0,"Unsupported command ID of 'function test'");
                             app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
@@ -905,7 +991,7 @@ static void app_tota_vendor_cmd_handler(APP_TOTA_CMD_CODE_E funcCode, uint8_t* p
         break;
 
         default:
-            TOTA_LOG_DBG(0,"Unsupported command ID of 'ANC mode test'");
+            TOTA_LOG_DBG(0,"Invalid TOTA command");
             app_tota_send_response(TOTA_INVALID_CMD, ptrParam, paramLen);
             return;
     }

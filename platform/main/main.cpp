@@ -314,7 +314,7 @@ void boot_secure_nse_boot_init(void)
 #endif
 
 #if RTT_APP_SUPPORT || defined(CHIP_SUBSYS_SENS)
-int main_enter(void)
+J int main_enter(void)
 #else
 int main(void)
 #endif
@@ -411,6 +411,14 @@ int main(void)
     system_power_on_callback();
 
 #ifndef FPGA
+/* Add by Jay, debug log to show software version. */
+    TRACE(0, "+++++++++++++++++++++++++++");
+    TRACE(0, "+                         +");
+    TRACE(0, "+     FW_VER=%s        +",REVISION_FW);
+    TRACE(0, "+                         +");
+    TRACE(0, "+++++++++++++++++++++++++++");
+/*Add by Jay, end. */
+
     hal_norflash_show_id_state(HAL_FLASH_ID_0, true);
 
     // Software will load the factory data and user data from the bottom TWO sectors from the flash,

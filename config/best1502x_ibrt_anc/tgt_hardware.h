@@ -25,6 +25,20 @@ extern "C" {
 #include "hal_key.h"
 #include "hal_aud.h"
 
+#ifdef CMT_008_SPP_GET_FW
+/***********************************************************************************/
+/* Record the software version, that can read when started in debug log show.
+ * Note: Update here each time you release the software, is very important.
+ * Add by Jay.
+ */
+
+#define REVISION_FW ("0.2.0\0")
+
+const char * app_tota_get_fw_version(void);
+
+/***********************************************************************************/
+#endif /*CMT_008_SPP_GET_FW*/
+
 //config hwardware codec iir.
 #define EQ_HW_DAC_IIR_LIST_NUM              2
 #define EQ_HW_ADC_IIR_LIST_NUM              1
