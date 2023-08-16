@@ -53,6 +53,11 @@
 #include "nvrecord_prompt.h"
 #else /*PROMPT_IN_FLASH*/
 
+#ifdef __USE_3_5JACK_CTR__
+#include "app_user.h"
+extern int app_play_linein_onoff(bool onoff);
+#endif /*__USE_3_5JACK_CTR__*/
+
 #define SUPPORT_ENGLISH (1 << 0)
 #define SUPPORT_CHINESE (1 << 1)
 #define SUPPORT_GENEMY (1 << 2)
@@ -93,6 +98,10 @@
 #if defined(__SW_IIR_PROMPT_EQ_PROCESS__)
 #include "iir_process.h"
 #endif
+
+#ifdef __USE_3_5JACK_CTR__
+#include "app_user.h"
+#endif /*__USE_3_5JACK_CTR__*/
 
 #if defined(AUDIO_PROMPT_USE_DAC2_ENABLED)
 #define MEDIA_PLAYER_USE_CODEC2
@@ -276,6 +285,25 @@ enum sound_id {
 #ifdef __INTERACTION__
     BT_FINDME,
 #endif
+#ifdef CMT_008_UI
+    BT_POWER_ON_16000,
+    BT_POWER_OFF_16000,
+    BT_PAIRING_16000,
+    BT_CONNECTED_16000,
+    BT_DISCONNECTED_16000,
+    BT_ANC_ON_16000,
+    BT_ANC_OFF_16000,
+    BT_AWARENESS_ON_16000,
+    BT_BATTERY_LOW_16000,
+    BT_CLICK_16000,
+    BT_DOUBLE_CLICK_16000,
+    BT_BEEP_21_16KM_16000,
+    BT_BEEP_22_16KM_16000,
+    BT_BEEP_24_16KM_16000,
+    BT_FACTORY_RESET_16000,
+
+#endif /*CMT_008_UI*/
+
     MAX_SOUND_ID
 };
 
@@ -393,7 +421,23 @@ static const media_sound_map_t media_sound_map_en[] =
 #ifdef __INTERACTION__
     SOUND_ITEM_DEF(EN_, BT_FINDME),
 #endif
-
+#ifdef CMT_008_UI
+    SOUND_ITEM_DEF(EN_, BT_POWER_ON_16000),
+    SOUND_ITEM_DEF(EN_, BT_POWER_OFF_16000),
+    SOUND_ITEM_DEF(EN_, BT_PAIRING_16000),
+    SOUND_ITEM_DEF(EN_, BT_CONNECTED_16000),
+    SOUND_ITEM_DEF(EN_, BT_DISCONNECTED_16000),
+    SOUND_ITEM_DEF(EN_, BT_ANC_ON_16000),
+    SOUND_ITEM_DEF(EN_, BT_ANC_OFF_16000),
+    SOUND_ITEM_DEF(EN_, BT_AWARENESS_ON_16000),
+    SOUND_ITEM_DEF(EN_, BT_BATTERY_LOW_16000),
+    SOUND_ITEM_DEF(EN_, BT_CLICK_16000),
+    SOUND_ITEM_DEF(EN_, BT_DOUBLE_CLICK_16000),
+    SOUND_ITEM_DEF(EN_, BT_BEEP_21_16KM_16000),
+    SOUND_ITEM_DEF(EN_, BT_BEEP_22_16KM_16000),
+    SOUND_ITEM_DEF(EN_, BT_BEEP_24_16KM_16000),
+    SOUND_ITEM_DEF(EN_, BT_FACTORY_RESET_16000),
+#endif /*CMT_008_UI*/
 };
 
 #endif
@@ -417,7 +461,7 @@ static tPlayContContext pCont_context;
 
 static int g_language = MEDIA_DEFAULT_LANGUAGE;
 #ifdef AUDIO_LINEIN
-static enum AUD_SAMPRATE_T app_play_audio_sample_rate = AUD_SAMPRATE_16000;
+static enum AUD_SAMPRATE_T app_play_audio_sample_rate = AUD_SAMPRATE_96000; //AUD_SAMPRATE_16000; //Modified by Jay, changed from 'AUD_SAMPRATE_16000' to 'AUD_SAMPRATE_96000'.
 #endif
 
 #define PROMPT_MIX_PROPERTY_PTR_FROM_ENTRY_INDEX(index)  \
@@ -810,6 +854,12 @@ static void media_playAudio_forware_playing_request_to_peer_dev(AUD_ID_ENUM id)
 
 void media_PlayAudio(AUD_ID_ENUM id,uint8_t device_id)
 {
+#if defined(__USE_3_5JACK_CTR__)
+    if(app_apps_3p5jack_plugin_flag(1)){
+        //app_play_linein_onoff(0);
+    }
+#endif /*__USE_3_5JACK_CTR__*/
+
     bool isToBeProcessed = media_playAudio_pre_processing(id, device_id, media_PlayAudio);
     if (!isToBeProcessed)
     {
@@ -1271,19 +1321,38 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
 #else
     uint8_t *sound_data = NULL;
     uint32_t length = 0;
+#ifdef CMT_008_UI
+    TRACE(2,"  [%s] play audio prompt id:[%d]",__func__,id);
+#endif /*CMT_008_UI*/
 
     switch (id) {
     case AUD_ID_POWER_ON:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_POWER_ON_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(POWER_ON, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_POWER_OFF:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_POWER_OFF_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(POWER_OFF, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_BT_PAIR_ENABLE:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_PAIRING_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(BT_PAIR_ENABLE, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_BT_PAIRING:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_PAIRING_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(BT_PAIRING, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_BT_PAIRING_SUC:
         get_sound_id_info(BT_PAIRING_SUCCESS, &sound_data, &length);
@@ -1316,10 +1385,18 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
         get_sound_id_info(CHARGE_FINISH, &sound_data, &length);
         break;
     case AUD_ID_BT_CONNECTED:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_CONNECTED_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(BT_CONNECTED, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_BT_DIS_CONNECT:
+#ifdef CMT_008_UI
+        get_sound_id_info(BT_DISCONNECTED_16000, &sound_data, &length);
+#else /*CMT_008_UI*/
         get_sound_id_info(BT_DIS_CONNECT, &sound_data, &length);
+#endif /*CMT_008_UI*/
         break;
     case AUD_ID_BT_WARNING:
         get_sound_id_info(BT_WARNING, &sound_data, &length);
@@ -1397,6 +1474,49 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
         get_sound_id_info(BT_FINDME, &sound_data, &length);
         break;
 #endif
+
+#ifdef CMT_008_UI
+    case AUD_ID_BT_ANC_ON:
+        get_sound_id_info(BT_ANC_ON_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_ANC_OFF:
+        get_sound_id_info(BT_ANC_OFF_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_AWARENESS_ON:
+        get_sound_id_info(BT_AWARENESS_ON_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_BATTERY_LOW:
+        get_sound_id_info(BT_BATTERY_LOW_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_CLICK:
+        get_sound_id_info(BT_CLICK_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_DOUBLE_CLICK:
+        get_sound_id_info(BT_DOUBLE_CLICK_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_BEEP_21:
+        get_sound_id_info(BT_BEEP_21_16KM_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_BEEP_22:
+        get_sound_id_info(BT_BEEP_22_16KM_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_BEEP_24:
+        get_sound_id_info(BT_BEEP_24_16KM_16000, &sound_data, &length);
+    break;
+
+    case AUD_ID_BT_FACTORY_RESET:
+        get_sound_id_info(BT_FACTORY_RESET_16000, &sound_data, &length);
+    break;
+#endif /*CMT_008_UI*/
+
     default:
         g_app_audio_length = 0;
         break;

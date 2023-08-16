@@ -197,6 +197,7 @@ static void app_ibrt_raw_ui_test_load_from_bt_pair_list(void)
 
     nv_record_env_get(&nvrecord_env);
     factory_section_original_btaddr_get(localAddr);
+    LOG_I("   jay [ %s ] ", __func__);
 
     bool isRightMasterSidePolicy = true;
 #ifdef IBRT_RIGHT_MASTER
@@ -284,6 +285,7 @@ int app_ibrt_ui_v2_test_config_load(void *config)
 
     nv_record_env_get(&nvrecord_env);
     factory_section_original_btaddr_get(ibrt_config->local_addr.address);
+    LOG_I("   jay [ %s ] ", __func__);
 
 #if !defined(FREE_TWS_PAIRING_ENABLED)
     // nv record content has been updated in app_ibrt_raw_ui_test_load_from_bt_pair_list
@@ -1838,10 +1840,12 @@ void app_ibrt_mgr_pairing_mode_test(void)
 #if !defined(FREE_TWS_PAIRING_ENABLED)
     app_ibrt_if_init_open_box_state_for_evb();
     app_ibrt_if_event_entry(APP_UI_EV_TWS_PAIRING);
+    LOG_I("   jay [ %s ] ", __func__);
 #else
     app_ibrt_if_init_open_box_state_for_evb();
     uint8_t btAddr[6];
     factory_section_original_btaddr_get(btAddr);
+    LOG_I("   jay [ %s ] ", __func__);
     btAddr[0] ^= 0x01;
     // the bit 0 of the bt address's first byte clarifies the tws addresses
     // master if it's 1, slave if it's 0
@@ -1865,6 +1869,7 @@ static void power_on_pairing_delay_timer_handler(void const *para)
 
 void app_ibrt_start_power_on_freeman_pairing(void)
 {
+    LOG_I("%s [Enter pairing jay] ", __func__);
     app_ibrt_if_enter_freeman_pairing();
 }
 
@@ -1972,13 +1977,69 @@ void app_ibrt_raw_ui_test_key(APP_KEY_STATUS *status, void *param)
 #ifdef IBRT_SEARCH_UI
         app_ibrt_search_ui_handle_key_v2(&curr_device->remote, status, param);
 #else
-        app_ibrt_normal_ui_handle_key_v2(&curr_device->remote, status, param);
+        app_ibrt_normal_ui_handle_key_v2(&curr_device->remote, status, param); //jay
 #endif
     }
 }
 
+#ifdef CMT_008_UI
+extern void app_anc_key(APP_KEY_STATUS *status, void *param);
+//extern void app_voice_assistant_key(APP_KEY_STATUS *status, void *param);
+//extern void bt_key_handle_siri_key(enum APP_KEY_EVENT_T event);
+extern void app_ibrt_ui_factory_reset_test(void);
+extern void app_factory_reset(void);
+extern void bt_key_handle_mute_key(void);
+
+static void app_mute_key_handle(APP_KEY_STATUS *status, void *param)
+{
+    TRACE(2,"%s event:%d", __func__, status->event);
+    switch(status->event)
+    {
+        case APP_KEY_EVENT_CLICK:
+            //bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
+            bt_key_handle_mute_key();
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void app_factory_reset_handle(APP_KEY_STATUS *status, void *param)
+{
+    TRACE(2,"%s event:%d", __func__, status->event);
+    switch(status->event)
+    {
+        case APP_KEY_EVENT_LONGPRESS:
+            app_factory_reset();
+            //app_ibrt_ui_factory_reset_test();
+            break;
+
+        default:
+            break;
+    }
+}
+
+#endif/*CMT_008_UI*/
+
+#if 0 /*add by jay, to test MC*/
+extern void app_dfu_key_handler(APP_KEY_STATUS *status, void *param);
+#endif /*add by jay, to test MC*/
+
+
+//jay
 const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
 {
+#ifdef CMT_008_UI /*add by jay*/
+    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGLONGPRESS},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    {{APP_KEY_CODE_PWR,APP_KEY_EVENT_DOUBLECLICK},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    {{APP_KEY_CODE_ANC,APP_KEY_EVENT_CLICK},"bt anc key", app_anc_key, NULL},
+    {{APP_KEY_CODE_VOICE_ASSISTANT,APP_KEY_EVENT_CLICK}, "google assistant key", app_mute_key_handle, NULL},
+    {{APP_KEY_CODE_VOICE_ASSISTANT|APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS}, "factory reset key", app_factory_reset_handle, NULL},
+    //{{APP_KEY_CODE_VOICE_ASSISTANT|APP_KEY_CODE_PWR,APP_KEY_EVENT_LONGPRESS},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"bt function key",app_dfu_key_handler, NULL}, //to test MC
+    //{{APP_KEY_CODE_PWR,APP_KEY_EVENT_CLICK},"app_ibrt_ui_test_key", app_ibrt_raw_ui_test_key, NULL},//to test LineIn
+#else /* CMT_008_UI */
 #if defined(__AI_VOICE__) || defined(BISTO_ENABLED)
     {{APP_KEY_CODE_GOOGLE, APP_KEY_EVENT_FIRST_DOWN}, "google assistant key", app_ai_manager_key_event_handle, NULL},
     {{APP_KEY_CODE_GOOGLE, APP_KEY_EVENT_UP}, "google assistant key", app_ai_manager_key_event_handle, NULL},
@@ -2006,6 +2067,7 @@ const APP_KEY_HANDLE  app_ibrt_ui_v2_test_key_cfg[] =
     {{APP_KEY_CODE_FN2,APP_KEY_EVENT_LONGPRESS},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
     {{APP_KEY_CODE_FN3,APP_KEY_EVENT_CLICK},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
     {{APP_KEY_CODE_FN3,APP_KEY_EVENT_DOUBLECLICK},"app_ibrt_service_test_key", app_tws_ibrt_test_key_io_event, NULL},
+#endif /* CMT_008_UI */
 };
 
 void app_tws_ibrt_raw_ui_test_key_init(void)

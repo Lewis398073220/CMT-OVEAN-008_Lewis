@@ -29,6 +29,9 @@
 #include "app_tws_ibrt_conn_api.h"
 #include "app_ibrt_debug.h"
 
+#include "app_bt_stream.h"//along add
+
+#include "ac107.h"  //add by jay
 
 #ifdef __AI_VOICE__
 #include "ai_manager.h"
@@ -45,6 +48,7 @@ extern "C" void app_tile_key_handler(APP_KEY_STATUS *status, void *param);
 #endif
 
 extern void app_otaMode_enter(APP_KEY_STATUS *status, void *param);
+extern "C" void pmu_reboot(void); //Add by jay
 
 #ifdef SUPPORT_SIRI
 extern uint8_t voice_assistant_flag;
@@ -183,6 +187,10 @@ void app_ibrt_search_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
 #ifdef GFPS_ENABLED
 extern "C" void app_enter_fastpairing_mode(void);
 #endif
+extern int app_play_linein_onoff(bool onoff);//along add
+
+#define DelayMs(a)      hal_sys_timer_delay(MS_TO_TICKS(a)) //add by jay
+
 void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *status, void *param)
 {
     uint8_t conn_devices = 0;
@@ -192,16 +200,64 @@ void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
         {
             case APP_KEY_EVENT_CLICK:
                 LOG_I("first blood.");
-                app_ibrt_middleware_handle_click();
+                //app_ibrt_middleware_handle_click();
+
+         #if 0 //Add by jay, to test line_in of button switch.
+                static bool flag = FALSE;
+                if(!flag)
+                {
+                    ac107_hw_open();
+                    ac107_i2c_init();
+                    DelayMs(100);
+                    ac107_hw_init();
+                    DelayMs(100);
+                    app_play_linein_onoff(TRUE);
+                    flag = TRUE;
+                }
+                else if(flag)
+                {
+                    ac107_hw_close();
+                    app_play_linein_onoff(FALSE);
+                    flag = FALSE;
+                }
+         #endif
                 break;
 
             case APP_KEY_EVENT_DOUBLECLICK:
-                LOG_I("double kill,enter freeman mode");
+                //LOG_I("double kill,enter freeman mode");
+#ifdef CMT_008_UI
+                LOG_I("double click [%s]",__func__);
+
+                uint8_t active_cons;
+                active_cons = btif_me_get_activeCons();
+
+                conn_devices = app_bt_count_connected_device();
+                LOG_I("double click--%d, %d",conn_devices,active_cons);
+                if(conn_devices)
+                //if(app_bt_ibrt_has_mobile_link_connected())
+                {
+                    LOG_I("disconnect BT [%s]",__func__);
+                    //app_disconnect_all_bt_connections();
+                    //LinkDisconnectDirectly(true);
+
+                    /*disconnect bt*/
+                    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+                    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+                }
+                else
+                {
+                    LOG_I("connect BT [%s]",__func__);
+                    /*connect bt*/
+                    app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
+                    app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);
+                }
+#else /*CMT_008_UI*/
                 //app_ibrt_if_init_open_box_state_for_evb();
                 app_ibrt_if_enter_freeman_pairing();
 #ifdef GFPS_ENABLED
                 app_enter_fastpairing_mode();
 #endif
+#endif /*CMT_008_UI*/
                 break;
             case APP_KEY_EVENT_LONGPRESS:
                 conn_devices = app_bt_count_connected_device();
@@ -218,12 +274,18 @@ void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
                 break;
 
             case APP_KEY_EVENT_TRIPLECLICK:
+#ifdef CMT_008_UI
+
+#else /* CMT_008_UI */
+
 #ifdef TILE_DATAPATH
                 app_tile_key_handler(status,NULL);
 #else
                 app_ibrt_if_init_open_box_state_for_evb();
                 app_ibrt_if_enter_pairing_after_tws_connected();
 #endif
+#endif /* CMT_008_UI */
+
                 break;
 
             case HAL_KEY_EVENT_LONGLONGPRESS:

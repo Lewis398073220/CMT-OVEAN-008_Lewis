@@ -189,6 +189,7 @@ void app_swift_init(void)
 
 void app_swift_enter_pairing_mode(void)
 {
+    TRACE(1," jay [%s] ", __func__);
     enable_swift = true;
     app_bt_accessmode_set(BTIF_BAM_GENERAL_ACCESSIBLE);
     app_ble_start_connectable_adv(BLE_ADVERTISING_INTERVAL);

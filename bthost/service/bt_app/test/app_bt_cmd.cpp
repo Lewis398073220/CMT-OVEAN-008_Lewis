@@ -690,7 +690,7 @@ void app_bt_access_mode_set_test(const char* param, uint32 len)
         TRACE(2, "%s invalid param %s", __func__, param);
         return;
     }
-
+    TRACE(1, " jay [%s] ", __func__);
     app_bt_accessmode_set((btif_accessible_mode_t)mode);
 }
 

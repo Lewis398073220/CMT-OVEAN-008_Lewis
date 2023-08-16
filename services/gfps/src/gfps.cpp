@@ -210,6 +210,7 @@ void gfps_enter_pairing_mode_handler(void)
     app_ui_update_scan_type_policy(SCAN_EV_ENTER_PAIRING);
 #endif
 #else
+    TRACE(1, " jay [%s] ", __func__);
     app_bt_accessmode_set(BTIF_BAM_GENERAL_ACCESSIBLE);
 #endif
 

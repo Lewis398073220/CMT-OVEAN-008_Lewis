@@ -98,7 +98,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
     struct APP_PWL_CFG_T cfg1;
 
     TRACE(2,"%s %d",__func__, status);
-
+    TRACE(1,"LED_status_set [%d]", status);
     if (app_status == status)
         return 0;
 
@@ -106,12 +106,22 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
         return 0;
 
     app_status = status;
-    memset(&cfg0, 0, sizeof(struct APP_PWL_CFG_T));
-    memset(&cfg1, 0, sizeof(struct APP_PWL_CFG_T));
+    memset(&cfg0, 0, sizeof(struct APP_PWL_CFG_T));//white led
+    memset(&cfg1, 0, sizeof(struct APP_PWL_CFG_T));//red led
     app_pwl_stop(APP_PWL_ID_0);
     app_pwl_stop(APP_PWL_ID_1);
     switch (status) {
         case APP_STATUS_INDICATION_POWERON:
+#ifdef CMT_008_UI_LED_INDICATION
+            cfg0.part[0].level = 1;
+            cfg0.part[0].time = (2500); 
+            cfg0.part[1].level = 0;
+            cfg0.part[1].time = (500); 
+            cfg0.parttotal = 2;
+            cfg0.startlevel = 1;
+            cfg0.periodic = true;
+#else /*CMT_008_UI_LED_INDICATION*/
+    
             cfg0.part[0].level = 1;
             cfg0.part[0].time = (200);
             cfg0.part[1].level = 0;
@@ -127,6 +137,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             cfg0.parttotal = 6;
             cfg0.startlevel = 1;
             cfg0.periodic = false;
+#endif /*CMT_008_UI_LED_INDICATION*/
 
             app_pwl_setup(APP_PWL_ID_0, &cfg0);
             app_pwl_start(APP_PWL_ID_0);
@@ -134,18 +145,22 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             break;
         case APP_STATUS_INDICATION_INITIAL:
             break;
-        case APP_STATUS_INDICATION_PAGESCAN:
+        case APP_STATUS_INDICATION_PAGESCAN:  //power_on
             cfg0.part[0].level = 1;
             cfg0.part[0].time = (300);
             cfg0.part[1].level = 0;
+#ifdef CMT_008_UI_LED_INDICATION
+            cfg0.part[1].time = (1000);
+#else /*CMT_008_UI_LED_INDICATION*/
             cfg0.part[1].time = (8000);
+#endif /*CMT_008_UI_LED_INDICATION*/
             cfg0.parttotal = 2;
             cfg0.startlevel = 1;
             cfg0.periodic = true;
             app_pwl_setup(APP_PWL_ID_0, &cfg0);
             app_pwl_start(APP_PWL_ID_0);
             break;
-        case APP_STATUS_INDICATION_BOTHSCAN:
+        case APP_STATUS_INDICATION_BOTHSCAN: //pairing
             cfg0.part[0].level = 0;
             cfg0.part[0].time = (300);
             cfg0.part[1].level = 1;
@@ -202,14 +217,23 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             break;
         case APP_STATUS_INDICATION_CHARGING:
             cfg1.part[0].level = 1;
-            cfg1.part[0].time = (5000);
+            cfg1.part[0].time = (500); //m by jay, changed from 5000 to 500.
             cfg1.parttotal = 1;
             cfg1.startlevel = 1;
-            cfg1.periodic = true;
+            cfg1.periodic = false; //m by jay, changed from true to false.
             app_pwl_setup(APP_PWL_ID_1, &cfg1);
             app_pwl_start(APP_PWL_ID_1);
             break;
         case APP_STATUS_INDICATION_FULLCHARGE:
+#ifdef CMT_008_UI_LED_INDICATION
+            cfg1.part[0].level = 0;
+            cfg1.part[0].time = (500); //m by jay, changed from 5000 to 500.
+            cfg1.parttotal = 1;
+            cfg1.startlevel = 1;
+            cfg1.periodic = false; //m by jay, changed from true to false.
+            app_pwl_setup(APP_PWL_ID_1, &cfg1);
+            app_pwl_start(APP_PWL_ID_1);
+#else /*CMT_008_UI_LED_INDICATION*/
             cfg0.part[0].level = 1;
             cfg0.part[0].time = (5000);
             cfg0.parttotal = 1;
@@ -217,8 +241,19 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             cfg0.periodic = true;
             app_pwl_setup(APP_PWL_ID_0, &cfg0);
             app_pwl_start(APP_PWL_ID_0);
+#endif /*CMT_008_UI_LED_INDICATION*/
             break;
         case APP_STATUS_INDICATION_POWEROFF:
+#ifdef CMT_008_UI_LED_INDICATION
+            cfg1.part[0].level = 1;
+            cfg1.part[0].time = (1000);
+            cfg1.part[1].level = 0;
+            cfg1.part[1].time = (500);            
+            cfg1.parttotal = 2;
+            cfg1.startlevel = 1;
+            cfg1.periodic = false;
+#else /*CMT_008_UI_LED_INDICATION*/
+
             cfg1.part[0].level = 1;
             cfg1.part[0].time = (200);
             cfg1.part[1].level = 0;
@@ -234,6 +269,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             cfg1.parttotal = 6;
             cfg1.startlevel = 1;
             cfg1.periodic = false;
+#endif /*CMT_008_UI_LED_INDICATION*/
 
             app_pwl_setup(APP_PWL_ID_1, &cfg1);
             app_pwl_start(APP_PWL_ID_1);

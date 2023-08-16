@@ -1043,8 +1043,8 @@ const SpeechConfig WEAK speech_cfg_default = {
         .gain       = 0.f,
         .num        = 1,
         .params = {
-			{IIR_BIQUARD_HIGHSHELF, {{4000, 0, 0.707}}},
-			//{IIR_BIQUARD_PEAKINGEQ, {{3100, 8, 5}}},
+			//{IIR_BIQUARD_HIGHSHELF, {{4000, 0, 0.707}}}, //disable by jay
+			{IIR_BIQUARD_PEAKINGEQ, {{5000, -5, 1.2}}},  //Modified by Jay
         },
     },
 #endif
@@ -1245,7 +1245,11 @@ const SpeechConfig WEAK speech_cfg_default = {
         .gain   = 0.f,
         .num    = 1,
         .params = {
-            {IIR_BIQUARD_HPF, {{60, 0, 0.707f}}},
+            //{IIR_BIQUARD_HPF, {{60, 0, 0.707f}}},
+            //{IIR_BIQUARD_LOWSHELF, {{100, -6, 1.0}}},
+            {IIR_BIQUARD_PEAKINGEQ, {{5600, -4, 2.0}}},  //Modified by Jay
+            //{IIR_BIQUARD_PEAKINGEQ, {{900,-9, 1.3}}},
+            //{IIR_BIQUARD_PEAKINGEQ, {{7000,-10, 0.6}}},
         },
     },
 #endif
@@ -1299,7 +1303,7 @@ const SpeechConfig WEAK speech_cfg_default = {
 ****************************************************************************************************/
     .rx_post_gain = {
         .bypass     = 0,
-        .gain_dB    = 6.0f,
+        .gain_dB    = 0.0f, //6.0f,  //Modified by Jay
     },
 #endif
 

@@ -106,6 +106,7 @@ void app_set_pending_access_mode(void)
     {
         TRACE(1,"Pending for change access mode to %d", gBT_DEFAULT_ACCESS_MODE);
         bt_access_mode_set_pending = 0;
+        TRACE(1, " jay [%s] ", __func__);
         app_bt_accessmode_set(gBT_DEFAULT_ACCESS_MODE);
     }
 }
@@ -113,6 +114,7 @@ void app_set_pending_access_mode(void)
 void app_retry_setting_access_mode(void)
 {
     TRACE(0,"Former setting access mode failed, retry it.");
+    TRACE(1, " jay [%s] ", __func__);
     app_bt_accessmode_set(gBT_DEFAULT_ACCESS_MODE);
 }
 
@@ -360,17 +362,19 @@ static inline int app_bt_mail_process(APP_BT_MAIL* mail_p)
             if ((BT_STS_NO_RESOURCES == status) || (BT_STS_IN_PROGRESS == status))
             {
 #if defined(IBRT) && defined(FREEMAN_ENABLED_STERO)
+                TRACE(1, " jay0 [%s] ", __func__);
                 app_ibrt_if_set_access_mode(IBRT_BAM_CONNECTABLE_ONLY);
 #else
-                app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
+j                app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #endif
             }
             else
             {
 #if defined(IBRT) && defined(FREEMAN_ENABLED_STERO)
+                TRACE(1, " jay1 [%s] ", __func__);
                 app_ibrt_if_set_access_mode(IBRT_BAM_NOT_ACCESSIBLE_MODE);
 #else            
-                app_bt_accessmode_set(BTIF_BAM_NOT_ACCESSIBLE);
+J                app_bt_accessmode_set(BTIF_BAM_NOT_ACCESSIBLE);
 #endif
             }
             break;
@@ -383,10 +387,12 @@ static inline int app_bt_mail_process(APP_BT_MAIL* mail_p)
             status = btif_hf_create_service_link(&mail_p->param.HF_CreateServiceLink_param.Addr);
             if ((BT_STS_NO_RESOURCES == status) || (BT_STS_IN_PROGRESS == status))
             {
+                TRACE(1, " jay2 [%s] ", __func__);
                 app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
             }
             else
             {
+                TRACE(1, " jay3 [%s] ", __func__);
                 app_bt_accessmode_set(BTIF_BAM_NOT_ACCESSIBLE);
             }
             break;

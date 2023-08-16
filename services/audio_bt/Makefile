@@ -104,6 +104,7 @@ ccflags-y += \
 	-Iapps/battery \
 	-Iapps/common \
 	-Iapps/factory \
+	-Iapps/user \
 	-Iapps/voice_assist/inc \
 	-Iutils/hwtimer_list \
 	-Iservices/voicepath \

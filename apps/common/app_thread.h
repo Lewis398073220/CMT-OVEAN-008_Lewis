@@ -75,6 +75,12 @@ enum APP_MODUAL_ID_T {
     APP_MODUAL_CUSTOM4,
     APP_MODUAL_CUSTOM5,
 #endif
+
+#ifdef __CST816S_TOUCH__
+    APP_MODUAL_TOUCH,
+#endif /*__CST816S_TOUCH__*/
+
+    APP_MODUAL_USERDEF, //add by jay
     APP_MODUAL_NUM
 };
 

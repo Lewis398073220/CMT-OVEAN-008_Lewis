@@ -2110,6 +2110,7 @@ uint32_t af_stream_open(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream, const
     enum AF_RESULT_T ret;
     enum AUD_STREAM_USE_DEVICE_T device;
     struct HAL_DMA_CH_CFG_T *dma_cfg = NULL;
+    TRACE(2,"%s *** [%d]",__func__,cfg->sample_rate);
 
     role = af_get_stream_role(id, stream);
     TRACE(3,"[%s] id = %d, stream = %d", __func__, id, stream);
@@ -2614,6 +2615,7 @@ uint32_t af_stream_open(enum AUD_STREAM_ID_T id, enum AUD_STREAM_T stream, const
 _exit:
     af_unlock_thread();
     if (ret == AF_RES_SUCCESS) {
+        TRACE(1,"            [%s]          ",__func__);
         af_stream_setup(id, stream, &role->cfg);
     }
 

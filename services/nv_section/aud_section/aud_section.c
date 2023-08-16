@@ -421,6 +421,7 @@ int audio_section_load_cfg(uint32_t device, uint8_t *cfg, uint32_t len)
     return 0;
 }
 
+// ANC data load, add by Jay.
 int anccfg_loadfrom_audsec(const struct_anc_cfg *list[], const struct_anc_cfg *list_44p1k[], uint32_t count)
 {
 #ifdef PROGRAMMER
@@ -453,8 +454,13 @@ int anccfg_loadfrom_audsec(const struct_anc_cfg *list[], const struct_anc_cfg *l
         return 1;
     }
     AUD_FLASH_TRACE(0,"Valid aud section.");
+
+    /* Modified by Jay, only load ANC config */
+    //for(i=0;i<1/*ANC_COEF_LIST_NUM*/;i++)
     for(i=0;i<ANC_COEF_LIST_NUM;i++)
         list[i] = (struct_anc_cfg *)&(audsec_ptr->sec_body.anc_config.anc_config_arr[i].anc_cfg[PCTOOL_SAMPLERATE_48X8K]);
+    /* Modified by Jay, only load ANC config */
+    //for(i=0;i<1/*ANC_COEF_LIST_NUM*/;i++)
     for(i=0;i<ANC_COEF_LIST_NUM;i++)
         list_44p1k[i] = (struct_anc_cfg *)&(audsec_ptr->sec_body.anc_config.anc_config_arr[i].anc_cfg[PCTOOL_SAMPLERATE_44_1X8K]);
     norflash_api_flash_operation_end((uint32_t) __anc_start);

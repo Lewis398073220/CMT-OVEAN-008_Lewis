@@ -62,7 +62,11 @@ extern "C" bool app_usbaudio_mode_on(void);
 #endif
 
 #ifndef APP_BATTERY_MIN_MV
+#ifdef CMT_008_BATTERY_LOW
+#define APP_BATTERY_MIN_MV (3320) //Modifed by Jay, changed from 3200 to 3320. 
+#else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_MIN_MV (3200)
+#endif /*CMT_008_BATTERY_LOW*/
 #endif
 
 #ifndef APP_BATTERY_MAX_MV
@@ -70,7 +74,12 @@ extern "C" bool app_usbaudio_mode_on(void);
 #endif
 
 #ifndef APP_BATTERY_PD_MV
+#ifdef CMT_008_BATTERY_LOW
+#define APP_BATTERY_PD_MV   (3200) //Modifed by Jay, changed from 3100 to 3200. 
+#else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_PD_MV   (3100)
+#endif /*CMT_008_BATTERY_LOW*/
+
 #endif
 
 #ifndef APP_BATTERY_CHARGE_TIMEOUT_MIN
@@ -169,6 +178,26 @@ struct APP_BATTERY_MEASURE_T
 
 #ifdef IS_BES_BATTERY_MANAGER_ENABLED
 
+#ifdef CMT_008_NTC_DETECT
+/* ntc 30k ok */
+#define CHARGE_HIGH_TEMPERATURE          225     // 45C
+#define CHARGE_LOW_TEMPERATURE           949    // 0C
+#define CHARGE_HIGH_TEMPERATURE_RECOVER  256    // 41C
+#define CHARGE_LOW_TEMPERATURE_RECOVER   840    // 4C
+
+#define DISCHARGE_HIGH_TEMPERATURE       193    // 50C
+#define DISCHARGE_LOW_TEMPERATURE        1266   // -10C
+
+#define TEMPERATURE_ERROT_COUNT          5
+
+static int8_t charge_temperature_error_num=0;
+static int8_t charge_temperature_valid_num=0;
+static bool charge_protection_flag=0;
+static int8_t discharge_temperature_error_num=0;
+
+static void app_create_ntc_timer_open(void);
+#endif /*CMT_008_NTC_DETECT*/
+
 static enum APP_BATTERY_CHARGER_T app_battery_charger_forcegetstatus(void);
 
 static void app_battery_pluginout_debounce_start(void);
@@ -203,8 +232,9 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     uint32_t meanBattVolt = 0;
     HAL_GPADC_MV_T vbat = volt;
     APP_BATTERY_TRACE(2,"%s %d",__func__, vbat);
+    TRACE(2,"volt:[%d],  volt<<2:[%d], %s", vbat, vbat<<2, __func__);
  #ifdef CHARGER_SPICIAL_CHAN
-    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
+J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
 #else
     if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat<<2) <= APP_BATTERY_ERR_MV))
 #endif
@@ -230,20 +260,25 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
         meanBattVolt /= APP_BATTERY_STABLE_COUNT;
         if (app_battery_measure.cb)
         {
-            if (meanBattVolt>app_battery_measure.highvolt)
+            if (meanBattVolt>app_battery_measure.highvolt) //more than 4200mV.
             {
+                TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_OVERVOLT, meanBattVolt);
             }
+            /* BattVolt > 3200mV && BattVolt < 3320mV, now is low battery state. */
             else if((meanBattVolt>app_battery_measure.pdvolt) && (meanBattVolt<app_battery_measure.lowvolt))
             {
+                TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_UNDERVOLT, meanBattVolt);
             }
-            else if(meanBattVolt<app_battery_measure.pdvolt)
+            else if(meanBattVolt<app_battery_measure.pdvolt) //lenss than 3200mV.
             {
+                TRACE(2, "%s   PD   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_PDVOLT, meanBattVolt);
             }
             else
             {
+                TRACE(2, "%s   NORMAL   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_NORMAL, meanBattVolt);
             }
         }
@@ -301,7 +336,7 @@ static void app_battery_timer_handler(void const *param)
 {
 #ifdef CHARGER_1802
     charger_vbat_div_adc_enable(true);
-    hal_gpadc_open(HAL_GPADC_CHAN_5, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
+J    hal_gpadc_open(HAL_GPADC_CHAN_5, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
 #else
     hal_gpadc_open(app_vbat_ch, HAL_GPADC_ATP_ONESHOT, app_battery_irqhandler);
 #endif
@@ -362,12 +397,32 @@ int app_status_battery_report(uint8_t level)
 int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PRAMS prams)
 {
     int8_t level = 0;
+#ifdef CMT_008_BATTERY_LOW
+    static uint8_t battery_low_play_time = 0;
+
+#endif /*CMT_008_BATTERY_LOW*/
 
     switch (status)
     {
         case APP_BATTERY_STATUS_UNDERVOLT:
             TRACE(1,"UNDERVOLT:%d", prams.volt);
+#ifdef CMT_008_BATTERY_LOW
+            if(!battery_low_play_time && !app_battery_is_charging())
+            {
+                media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0);
+            }
+
+            battery_low_play_time ++;
+            /* About 1min to play once 'battery low' prompts, since every 10sec to handle once of battery timer. */
+            if(battery_low_play_time >= 7)
+            {
+                media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0);
+                battery_low_play_time = 1;
+            }
+#else /*CMT_008_BATTERY_LOW*/
             app_status_indication_set(APP_STATUS_INDICATION_CHARGENEED);
+#endif /*CMT_008_BATTERY_LOW*/
+
 #ifdef MEDIA_PLAYER_SUPPORT
 #if defined(IBRT)
 
@@ -405,6 +460,8 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
         case APP_BATTERY_STATUS_PDVOLT:
 #ifndef BT_USB_AUDIO_DUAL_MODE
             TRACE(1,"PDVOLT-->POWEROFF:%d", prams.volt);
+            TRACE(0,"Low battery POWEROFF");
+            media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0); //Add by Jay, play 'battery low' prompts.
             osTimerStop(app_battery_timer);
             app_shutdown();
 #endif
@@ -454,7 +511,20 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
                 osTimerStop(app_battery_timer);
                 app_shutdown();
 #else
-                app_battery_measure.status = APP_BATTERY_STATUS_NORMAL;
+                /* Disable by jay */
+                //app_battery_measure.status = APP_BATTERY_STATUS_NORMAL;
+
+                /* Add by jay*/
+                
+                osTimerStop(app_battery_timer);
+                //app_reset();
+                //app_shutdown();
+                /* Note: can not call 'app_shutdown()' and 'app_reset()',
+                 * Otherwise have happen crash, here. I don't know why.
+                 * Add by Jay.
+                 */
+                pmu_reboot();
+                /* Add by jay, end. */
 #endif
 #endif
             }
@@ -483,6 +553,13 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
             media_PlayAudio(AUD_ID_BT_CHARGE_FINISH, 0);
 #endif
 #endif
+
+            /* Add by Jay, disable charger pin, since now battery full. */
+            if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
+            {
+                hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin);
+            }
+            /* Add by Jay end. */
         }
     }
 
@@ -515,6 +592,7 @@ static int app_battery_handle_process(APP_MESSAGE_BODY *msg_body)
         switch (app_battery_measure.status)
         {
             case APP_BATTERY_STATUS_NORMAL:
+                TRACE(1,"[ %s ]",__func__);
                 app_battery_handle_process_normal((uint32_t)status, msg_prams);
 #if defined(CHIP_BEST1501P)
                 if(pmu_ana_volt_is_high() == false){
@@ -644,7 +722,8 @@ int app_battery_open(void)
 
     if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
     {
-        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_detecter_cfg, 1);
+        //hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_detecter_cfg, 1); /* disable by jay */
+        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_enable_cfg, 1); //modified by jay
         hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 1);
     }
 
@@ -660,8 +739,10 @@ int app_battery_open(void)
 
 #if (CHARGER_PLUGINOUT_RESET == 0)
         nRet = APP_BATTERY_OPEN_MODE_CHARGING_PWRON;
+        TRACE(2," [%s] , if [%d]",__func__,nRet);
 #else
         nRet = APP_BATTERY_OPEN_MODE_CHARGING;
+        TRACE(2," [%s] , else [%d]",__func__,nRet);
 #endif
     }
     else
@@ -669,7 +750,13 @@ int app_battery_open(void)
         app_battery_measure.status = APP_BATTERY_STATUS_NORMAL;
         //pmu_charger_plugout_config();
         nRet = APP_BATTERY_OPEN_MODE_NORMAL;
+        TRACE(2," [%s] , _else_ [%d]",__func__,nRet);
     }
+
+#ifdef CMT_008_NTC_DETECT
+    app_create_ntc_timer_open();
+#endif /*CMT_008_NTC_DETECT*/
+
     return nRet;
 }
 
@@ -734,7 +821,7 @@ static int app_battery_charger_handle_process(void)
         }
         if (overvolt_full_charge_cnt>=APP_BATTERY_CHARGING_OVERVOLT_DEDOUNCE_CNT)
         {
-            //TRACE(0,"OVERVOLT-->FULL_CHARGING");
+            TRACE(0,"OVERVOLT-->FULL_CHARGING");
             nRet = -1;
             goto exit;
         }
@@ -886,6 +973,46 @@ static void app_battery_pluginout_debounce_handler(void const *param)
     }
 }
 
+/* Add by Jay */
+#ifdef CMT_008_NTC_DETECT
+
+#define APP_NTC_DETECT_TIMER_MS  1000  // timer time
+
+static osTimerId app_ntc_timer = NULL; // timer ID 
+
+/* Software timer hanlde func */
+static void app_ntc_timer_handle(void const *param)
+{
+    // do anything
+    ntc_capture_open();
+}
+
+/* Define software timer. */
+osTimerDef (APP_NTC_SW_TIMER, app_ntc_timer_handle);
+
+/* Create a software timer task */
+static void app_create_ntc_timer_open(void)
+{
+    /* If it hasn't been created, it will be created. */
+    if (app_ntc_timer == NULL)
+    {
+        /* Create a software Timer and return a Timer ID for later indexing. */
+        app_ntc_timer = osTimerCreate(osTimer(APP_NTC_SW_TIMER), osTimerPeriodic, NULL);
+
+        /* One-shot timer.*/
+        //app_ntc_timer = osTimerCreate(osTimer(APP_NTC_SW_TIMER), osTimerOnce, NULL);
+    }
+
+    /* The following are the Stop and Start Timer tasks,
+     * which take the parameters of the created Timer ID and time. */  
+    osTimerStop(app_ntc_timer);
+    osTimerStart(app_ntc_timer, APP_NTC_DETECT_TIMER_MS);
+
+    //hal_gpio_pin_set((enum HAL_GPIO_PIN_T)Cfg_ntc_volt_ctr.pin);
+}
+
+#endif /*CMT_008_NTC_DETECT*/
+
 int app_battery_charger_indication_open(void)
 {
     enum APP_BATTERY_CHARGER_T status = APP_BATTERY_CHARGER_QTY;
@@ -953,6 +1080,11 @@ static struct NTC_CAPTURE_MEASURE_T ntc_capture_measure;
 
 void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
 {
+#if 0
+    TRACE(1,"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[%d][%d]",\
+    hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin),\
+    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin));
+#endif
     uint32_t meanVolt = 0;
     TRACE(3,"%s %d irq:0x%04x",__func__, volt, irq_val);
 
@@ -978,7 +1110,105 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     }
     ntc_capture_measure.temperature = ((int32_t)ntc_capture_measure.currvolt - NTC_CAPTURE_VOLTAGE_REF)/NTC_CAPTURE_TEMPERATURE_STEP + NTC_CAPTURE_TEMPERATURE_REF;
     pmu_ntc_capture_disable();
-    TRACE(3,"%s ad:%d temperature:%d",__func__, ntc_capture_measure.currvolt, ntc_capture_measure.temperature);
+
+#ifdef CMT_008_NTC_DETECT
+    static bool status_indication = FALSE;
+
+    if(app_battery_is_charging())
+    {
+        //TODO: Jay
+        if(!status_indication)
+        {
+            status_indication = TRUE;
+            app_status_indication_set(APP_STATUS_INDICATION_CHARGING);
+        }
+        
+        discharge_temperature_error_num=0;
+
+        /* If current temperature more than 45?? or less than 0??. */
+        if((ntc_capture_measure.currvolt<CHARGE_HIGH_TEMPERATURE)||(ntc_capture_measure.currvolt>CHARGE_LOW_TEMPERATURE))
+        {
+            charge_temperature_error_num++;
+            //charge_temperature_valid_num=0;
+        }
+        else
+        {
+            charge_temperature_error_num=0;
+            //charge_temperature_valid_num++;
+        }
+
+        //charge over-temperature protection
+        if(charge_temperature_error_num>TEMPERATURE_ERROT_COUNT)
+        {
+            charge_temperature_error_num=TEMPERATURE_ERROT_COUNT+1;
+            if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
+            {
+                /* Disable charger pin */
+                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 0);
+                charge_protection_flag=1;
+                //app_pwm_clear();//disable pwm
+                //app_status_indication_set(APP_STATUS_INDICATION_FULLCHARGE);
+            }
+        }
+
+        //charge recover
+        if(charge_protection_flag)
+        {
+            if((ntc_capture_measure.currvolt<CHARGE_HIGH_TEMPERATURE_RECOVER)||(ntc_capture_measure.currvolt>CHARGE_LOW_TEMPERATURE_RECOVER))
+                charge_temperature_valid_num=0;
+            else
+                charge_temperature_valid_num++;
+        }
+        else
+        {
+            charge_temperature_valid_num=0;
+        }
+
+        if(charge_temperature_valid_num>30)
+        {
+            charge_temperature_valid_num=30+1;
+            if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
+            {
+                //if(0==charge_full_flag)
+                {
+                    /* Enable charger pin */
+                    hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);
+                    charge_protection_flag=0;
+                    app_status_indication_set(APP_STATUS_INDICATION_CHARGING);
+
+                    //Todo: LED indication. jay
+                    //apps_pwm_set(RED_PWM_LED, 1); //enable pwm
+                }
+            }
+        }
+    }
+    else
+    {
+        if(status_indication)
+        {
+            status_indication = FALSE;
+            app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+        }
+        
+        //TODO: Jay
+        charge_temperature_error_num=0;
+        charge_temperature_valid_num=0;
+        if((ntc_capture_measure.currvolt<DISCHARGE_HIGH_TEMPERATURE)||(ntc_capture_measure.currvolt>DISCHARGE_LOW_TEMPERATURE))
+            discharge_temperature_error_num++;
+        else
+            discharge_temperature_error_num=0;
+
+        if(discharge_temperature_error_num>TEMPERATURE_ERROT_COUNT)
+        {
+            discharge_temperature_error_num=TEMPERATURE_ERROT_COUNT+1;
+
+            osTimerStop(app_battery_timer);
+            osTimerStop(app_ntc_timer);
+            TRACE(1, "[%s] Temp anomaly need shutdown.", __func__);
+            app_shutdown();
+        }
+    }
+#endif /*CMT_008_NTC_DETECT*/
 }
 
 int ntc_capture_open(void)
@@ -990,14 +1220,22 @@ int ntc_capture_open(void)
     ntc_capture_measure.cb = NULL;
 
     pmu_ntc_capture_enable();
+#ifdef CMT_008_NTC_DETECT
+    hal_gpadc_open(HAL_GPADC_CHAN_4, HAL_GPADC_ATP_ONESHOT, ntc_capture_irqhandler);
+#else /*CMT_008_NTC_DETECT*/
     hal_gpadc_open(HAL_GPADC_CHAN_0, HAL_GPADC_ATP_ONESHOT, ntc_capture_irqhandler);
+#endif /*CMT_008_NTC_DETECT*/
     return 0;
 }
 
 int ntc_capture_start(void)
 {
     pmu_ntc_capture_enable();
+#ifdef CMT_008_NTC_DETECT
+    hal_gpadc_open(HAL_GPADC_CHAN_4, HAL_GPADC_ATP_ONESHOT, ntc_capture_irqhandler);
+#else /*CMT_008_NTC_DETECT*/
     hal_gpadc_open(HAL_GPADC_CHAN_0, HAL_GPADC_ATP_ONESHOT, ntc_capture_irqhandler);
+#endif /*CMT_008_NTC_DETECT*/
     return 0;
 }
 #else

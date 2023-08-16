@@ -164,6 +164,67 @@ const uint8_t EN_BT_MUTE[] = {
 #include "res/SOUND_MUTE.txt"
 };
 
+#ifdef CMT_008_UI
+
+const uint8_t EN_BT_POWER_ON_16000[] = {
+#include "res/en/SOUND_POWER_ON_16000.txt"
+};
+const uint8_t EN_BT_POWER_OFF_16000[] = {
+#include "res/en/SOUND_POWER_OFF_16000.txt"
+};
+
+const uint8_t EN_BT_PAIRING_16000[] = {
+#include "res/en/SOUND_PAIRING_16000.txt"
+};
+const uint8_t EN_BT_CONNECTED_16000[] = {
+#include "res/en/SOUND_CONNECTED_16000.txt"
+};
+
+const uint8_t EN_BT_DISCONNECTED_16000[] = {
+#include "res/en/SOUND_DISCONNECTED_16000.txt"
+};
+
+const uint8_t EN_BT_ANC_ON_16000[] = {
+#include "res/en/SOUND_ANC_ON_16000.txt"
+};
+
+const uint8_t EN_BT_ANC_OFF_16000[] = {
+#include "res/en/SOUND_ANC_OFF_16000.txt"
+};
+
+const uint8_t EN_BT_AWARENESS_ON_16000[] = {
+#include "res/en/SOUND_AWARENESS_ON_16000.txt"
+};
+
+const uint8_t EN_BT_BATTERY_LOW_16000[] = {
+#include "res/en/SOUND_BATTERY_LOW_16000.txt"
+};
+
+const uint8_t EN_BT_CLICK_16000[] = {
+#include "res/en/SOUND_CLICK_16000.txt"
+};
+
+const uint8_t EN_BT_DOUBLE_CLICK_16000[] = {
+#include "res/en/SOUND_DOUBLE_CLICK_16000.txt"
+};
+
+const uint8_t EN_BT_BEEP_21_16KM_16000[] = {
+#include "res/en/SOUND_BEEP_21_16KM_16000.txt"
+};
+
+const uint8_t EN_BT_BEEP_22_16KM_16000[] = {
+#include "res/en/SOUND_BEEP_22_16KM_16000.txt"
+};
+
+const uint8_t EN_BT_BEEP_24_16KM_16000[] = {
+#include "res/en/SOUND_BEEP_24_16KM_16000.txt"
+};
+
+const uint8_t EN_BT_FACTORY_RESET_16000[] = {
+#include "res/en/SOUND_FACTORY_RESET_16000.txt"
+};
+
+#endif /*CMT_008_UI*/
 #endif
 
 #endif /* __RES_AUDIO_DATA_H__ */

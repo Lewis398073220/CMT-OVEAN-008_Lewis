@@ -183,6 +183,13 @@ int sidetone_opened=0;
 #endif
 #endif
 
+#ifdef CMT_008_SPP_TOTA_V2
+#include "app_tota.h"
+#endif /*CMT_008_SPP_TOTA_V2*/
+
+#include "app_user.h"            //add by jay
+//#include "app_audio_control.h"   //add by jay
+
 // #define A2DP_STREAM_AUDIO_DUMP      (16)
 
 #if defined(A2DP_STREAM_AUDIO_DUMP)
@@ -5982,6 +5989,7 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 
         freq = sco_player_reselect_freq(freq);
         freq = APP_SYSFREQ_USER_BT_SCO_MASTER;
+        //freq = APP_SYSFREQ_208M; //Add by jay
         app_sysfreq_req(APP_SYSFREQ_USER_BT_SCO, freq);
 
 #if defined(ENABLE_CALCU_CPU_FREQ_LOG)
@@ -6058,7 +6066,7 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 
         // codec:mic
 #if defined(ANC_ASSIST_ENABLED)
-        stream_cfg.channel_map  = (enum AUD_CHANNEL_MAP_T)app_anc_assist_get_mic_ch_map(AUD_INPUT_PATH_MAINMIC);
+j        stream_cfg.channel_map  = (enum AUD_CHANNEL_MAP_T)app_anc_assist_get_mic_ch_map(AUD_INPUT_PATH_MAINMIC);
         sco_cap_chan_num        = (enum AUD_CHANNEL_NUM_T)app_anc_assist_get_mic_ch_num(AUD_INPUT_PATH_MAINMIC);
 #if defined(ASSIST_LOW_RAM_MOD) && !defined(ANC_ASSIST_UNUSED_ON_PHONE_CALL)
         anc_assist_resample_init(sample_rate, app_anc_assist_get_frame_len(), pool_allocator(), sco_cap_chan_num);
@@ -6066,7 +6074,29 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
         memset(anc_assist_resample_buf, 0, speech_get_codecpcm_buf_len(sample_rate / 2, sco_cap_chan_num, SPEECH_SCO_FRAME_MS));
 #endif
 #endif
+#ifdef CMT_008_SPP_TOTA_V2
+        switch(current_select_mic())
+		{
+            case AUD_INPUT_PATH_LFFMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_LFFMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_RFFMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_RFFMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_LFBMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_LFBMIC_SPP;
+            break;
+            case AUD_INPUT_PATH_RFBMIC_SPP:
+                stream_cfg.io_path = AUD_INPUT_PATH_RFBMIC_SPP;
+            break;        
+			case AUD_INPUT_PATH_MAINMIC:
+            default:
+				stream_cfg.io_path = AUD_INPUT_PATH_MAINMIC;
+				break;
+        }
+#else /*CMT_008_SPP_TOTA_V2*/
         stream_cfg.io_path = AUD_INPUT_PATH_MAINMIC;
+#endif /*CMT_008_SPP_TOTA_V2*/
         stream_cfg.channel_num = sco_cap_chan_num;
         stream_cfg.data_size = speech_get_codecpcm_buf_len(sample_rate, stream_cfg.channel_num, SPEECH_SCO_FRAME_MS);
 
@@ -6783,6 +6813,8 @@ static int bt_sco_player(bool on, enum APP_SYSFREQ_FREQ_T freq)
 #elif (LINEIN_CAPTURE_CHANNEL == 2)
 #define LINEIN_PLAYER_BUFFER_SIZE (1024*LINEIN_PLAYER_CHANNEL)
 #define LINEIN_CAPTURE_BUFFER_SIZE (LINEIN_PLAYER_BUFFER_SIZE)
+//#define LINEIN_CAPTURE_BUFFER_SIZE (1024*50) //modified by jay
+
 #endif
 
 int8_t app_linein_buffer_is_empty(void)
@@ -6798,17 +6830,24 @@ uint32_t app_linein_pcm_come(uint8_t * pcm_buf, uint32_t len)
 {
     app_audio_pcmbuff_put(pcm_buf, len);
 
+    //DUMP8("0x%02x ", pcm_buf, 10);
+    //TRACE(0,"app_linein_pcm_come");
+
     return len;
 }
 
 uint32_t app_linein_need_pcm_data(uint8_t* pcm_buf, uint32_t len)
 {
+    //DUMP8("0x%02x ", pcm_buf, 10);
+    //TRACE(0,"%s , CAPTURE_CHANNEL: %d",__func__,LINEIN_CAPTURE_CHANNEL);
 #if (LINEIN_CAPTURE_CHANNEL == 1)
     app_audio_pcmbuff_get((uint8_t *)app_linein_play_cache, len/2);
     app_play_audio_lineinmode_more_data((uint8_t *)app_linein_play_cache,len/2);
     app_bt_stream_copy_track_one_to_two_16bits((int16_t *)pcm_buf, app_linein_play_cache, len/2/2);
 #elif (LINEIN_CAPTURE_CHANNEL == 2)
     app_audio_pcmbuff_get((uint8_t *)pcm_buf, len);
+    //DUMP8("0x%02x ", pcm_buf, 10);
+    //TRACE(0,"app_linein_need_pcm_data");
     app_play_audio_lineinmode_more_data((uint8_t *)pcm_buf, len);
 #endif
 
@@ -6845,7 +6884,8 @@ int app_play_linein_onoff(bool onoff)
         return 0;
 
     if (onoff) {
-        app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_104M);
+        //app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_104M);
+        app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_208M);// Modified by Jay, changed from 'APP_SYSFREQ_104M' to 'APP_SYSFREQ_208M'.
         app_overlay_select(APP_OVERLAY_A2DP);
         app_audio_mempool_init_with_specific_size(app_audio_mempool_size());
         app_audio_mempool_get_buff(&linein_audio_cap_buff, LINEIN_CAPTURE_BUFFER_SIZE);
@@ -6856,21 +6896,24 @@ int app_play_linein_onoff(bool onoff)
 #if (LINEIN_CAPTURE_CHANNEL == 1)
         app_audio_mempool_get_buff((uint8_t **)&app_linein_play_cache, LINEIN_PLAYER_BUFFER_SIZE/2/2);
         app_play_audio_lineinmode_init(LINEIN_CAPTURE_CHANNEL, LINEIN_PLAYER_BUFFER_SIZE/2/2);
-#elif (LINEIN_CAPTURE_CHANNEL == 2)
+#elif (LINEIN_CAPTURE_CHANNEL == 2) //jay
         app_play_audio_lineinmode_init(LINEIN_CAPTURE_CHANNEL, LINEIN_PLAYER_BUFFER_SIZE/2);
 #endif
 
         memset(&stream_cfg, 0, sizeof(stream_cfg));
 
-        stream_cfg.bits = AUD_BITS_16;
+        stream_cfg.bits = AUD_BITS_24; // Modified by Jay, changed from 'AUD_BITS_16' to 'AUD_BITS_24'.
         stream_cfg.channel_num = (enum AUD_CHANNEL_NUM_T)LINEIN_PLAYER_CHANNEL;
 #if defined(__AUDIO_RESAMPLE__)
-        stream_cfg.sample_rate = AUD_SAMPRATE_50781;
+
+        stream_cfg.sample_rate = AUD_SAMPRATE_96000;//50781 //Modified by jay
 #else
-        stream_cfg.sample_rate = AUD_SAMPRATE_44100;
+
+		stream_cfg.sample_rate = AUD_SAMPRATE_96000;//44100 //Modified by jay
+
 #endif
 #if FPGA==0
-        stream_cfg.device = AUD_STREAM_USE_INT_CODEC;
+        stream_cfg.device = AUD_STREAM_USE_INT_CODEC; /* Noted, here not change device type. add by jay. */
 #else
         stream_cfg.device = AUD_STREAM_USE_EXT_CODEC;
 #endif
@@ -6936,7 +6979,8 @@ int app_play_linein_onoff(bool onoff)
         audio_process_open(stream_cfg.sample_rate, stream_cfg.bits, sw_ch_num, stream_cfg.channel_num, stream_cfg.data_size/stream_cfg.channel_num/(stream_cfg.bits <= AUD_BITS_16 ? 2 : 4)/2, bt_eq_buff, eq_buff_size);
 
 #ifdef __SW_IIR_EQ_PROCESS__
-        bt_audio_set_eq(AUDIO_EQ_TYPE_SW_IIR,bt_audio_get_eq_index(AUDIO_EQ_TYPE_SW_IIR,0));
+        //bt_audio_set_eq(AUDIO_EQ_TYPE_SW_IIR,bt_audio_get_eq_index(AUDIO_EQ_TYPE_SW_IIR,0));
+		bt_audio_set_eq(AUDIO_EQ_TYPE_SW_IIR,bt_audio_get_eq_index(AUDIO_EQ_TYPE_SW_IIR,app_eq_index_get()));//m by pang
 #endif
 
 #ifdef __HW_FIR_EQ_PROCESS__
@@ -6989,14 +7033,21 @@ int app_play_linein_onoff(bool onoff)
 
         memset(&stream_cfg, 0, sizeof(stream_cfg));
 
-        stream_cfg.bits = AUD_BITS_16;
+		stream_cfg.bits = AUD_BITS_24;//AUD_BITS_16;//Modified by jay
+
 #if defined(__AUDIO_RESAMPLE__)
-        stream_cfg.sample_rate = AUD_SAMPRATE_50781;
+
+        stream_cfg.sample_rate = AUD_SAMPRATE_96000;//50781 //Modified by jay
+
 #else
-        stream_cfg.sample_rate = AUD_SAMPRATE_44100;
+
+        stream_cfg.sample_rate = AUD_SAMPRATE_96000;//44100 //Modified by jay
+
 #endif
 #if FPGA==0
-        stream_cfg.device = AUD_STREAM_USE_INT_CODEC;
+        //stream_cfg.device = AUD_STREAM_USE_INT_CODEC;
+		stream_cfg.device = AUD_STREAM_USE_I2S0_MASTER; //modified by jay
+		//stream_cfg.device = AUD_STREAM_USE_I2S0_SLAVE; //TO Test
 #else
         stream_cfg.device = AUD_STREAM_USE_EXT_CODEC;
 #endif
@@ -7021,6 +7072,12 @@ int app_play_linein_onoff(bool onoff)
         app_overlay_unloadall();
         app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_32K);
      }
+        TRACE(0, "[%s]: sample rate: %d, bits: %d, channel number: %d, data size:%d",
+            __func__,
+            stream_cfg.sample_rate,
+            stream_cfg.bits,
+            stream_cfg.channel_num,
+            stream_cfg.data_size);
 
     isRun = onoff;
     TRACE_AUD_STREAM_I("[LINEIN_PLAYER] end!\n");

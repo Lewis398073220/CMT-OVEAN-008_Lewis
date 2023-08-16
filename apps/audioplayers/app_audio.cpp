@@ -139,7 +139,11 @@ int app_anc_assist_mempool_get_buff(uint8_t **buff, uint32_t size)
 #endif
 
 #if (defined(PLAYBACK_USE_I2S) || defined(FREEMAN_ENABLED_STERO))
-#define APP_MEDIA_BUFFER_SIZE (10*1024)
+/* Modified by Jay, changed from '(10*1024)' to '(50*1024)'.
+ * Fixed the headset will crash if you plug in a 3.5 line-In.
+ */
+#define APP_MEDIA_BUFFER_SIZE  (50*1024)//(10*1024)
+#elif (PROMPT_USE_AAC) 
 #elif (PROMPT_USE_AAC) 
 #define APP_MEDIA_BUFFER_SIZE (50*1024)
 #else

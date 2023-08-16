@@ -42,6 +42,7 @@ ccflags-y +=  \
     -Iutils/intersyshci \
     -Iapps/apptester \
     -Iapps/factory \
+    -Iapps/user \
     -Iapps/voice_detector \
     -Iutils/crc32 \
     -Iutils/list \
@@ -74,7 +75,8 @@ ccflags-y +=  \
     -Iapps/sensorhub \
     -Iapps/dsp_m55 \
     -Iplatform/drivers/cp_accel \
-    -Iservices/audio_manager
+    -Iservices/audio_manager \
+    -Iplatform/drivers/cst812t
 
 
 ifeq ($(BLE_USB_AUDIO_SUPPORT),1)

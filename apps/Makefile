@@ -1,4 +1,4 @@
-obj-y := audioplayers/ common/ main/ key/ pwl/ battery/ factory/ cmd/ mic/ audio_test/ bt_sync/
+obj-y := audioplayers/ common/ main/ key/ pwl/ battery/ factory/ cmd/ mic/ audio_test/ bt_sync/ user/
 
 ifeq ($(CAPSENSOR_SPP_SERVER),1)
 obj-y += app_spp/

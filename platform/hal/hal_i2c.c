@@ -78,10 +78,13 @@
 /* i2c synchronization timeout ms */
 #define HAL_I2C_SYNC_TM_MS (2000)
 #define HAL_I2C_DLY_MS (1)
-#define HAL_I2C_WAIT_ACT_MS (1000)
-#define HAL_I2C_WAIT_TFE_MS (1000)
-#define HAL_I2C_WAIT_TFNF_MS (1000)
-#define HAL_I2C_WAIT_RFNE_MS (1000)
+
+/* Modified by Jay, waiting too long will cause a crash.
+ * Changed from 1000 to 10. */
+#define HAL_I2C_WAIT_ACT_MS (10) //1000
+#define HAL_I2C_WAIT_TFE_MS (10) //1000
+#define HAL_I2C_WAIT_TFNF_MS (10) //1000
+#define HAL_I2C_WAIT_RFNE_MS (10) //1000
 
 enum HAL_I2C_SM_STATE_T {
     HAL_I2C_SM_CLOSED = 0,
@@ -183,7 +186,7 @@ static const struct HAL_I2C_HW_DESC_T i2c_desc[HAL_I2C_ID_NUM] = {
 #ifdef FPGA
         .iomux_func = 0,
 #else
-        .iomux_func = hal_iomux_set_i2c0,
+        .iomux_func = hal_iomux_set_i2c0, //jay
 #endif
         .mod = HAL_CMU_MOD_O_I2C0,
         .apb = HAL_CMU_MOD_P_I2C0,
@@ -2474,6 +2477,23 @@ uint32_t hal_i2c_simple_recv(enum HAL_I2C_ID_T id, uint16_t device_addr, const u
 #endif
 /* simple mode end */
 
+/** Add by Jay, copy from pang **/
+
+uint32_t hal_i2c_simple_recv_cst(enum HAL_I2C_ID_T id, uint16_t device_addr, const uint8_t *tx_buf, uint16_t tx_len, uint8_t *rx_buf, uint16_t rx_len)
+{
+    int ret;
+
+    ret = hal_i2c_mst_write(id, device_addr, tx_buf, tx_len, NULL, true, true, false);
+    if (ret) {
+        HAL_I2C_TRACE(2,"%s: mst_write failed: ret=%d", __func__, ret);
+        return ret;
+    }
+
+    return hal_i2c_mst_read(id, device_addr, rx_buf, rx_len, NULL, true, true, false);
+}
+
+/** end add **/
+
 /* sensor engine mode */
 #ifdef I2C_SENSOR_ENGINE_V1
 static void hal_i2c_sensor_eng_proc(enum HAL_I2C_ID_T id)
@@ -2679,8 +2699,8 @@ __STATIC_FORCEINLINE uint8_t GPIO_ReadIO(uint8_t port)
 static int hal_gpio_i2c_initialize(const struct HAL_GPIO_I2C_CONFIG_T *cfg)
 {
     struct HAL_IOMUX_PIN_FUNCTION_MAP hal_gpio_i2c_iomux_cfg[] = {
-        {HAL_IOMUX_PIN_NUM, HAL_IOMUX_FUNC_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE},
-        {HAL_IOMUX_PIN_NUM, HAL_IOMUX_FUNC_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE},
+        {HAL_IOMUX_PIN_NUM, HAL_IOMUX_FUNC_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_NOPULL/*HAL_IOMUX_PIN_PULLUP_ENABLE*/}, // Modified by Jay.
+        {HAL_IOMUX_PIN_NUM, HAL_IOMUX_FUNC_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_NOPULL/*HAL_IOMUX_PIN_PULLUP_ENABLE*/}, // Modified by Jay.
     };
 
     hal_gpio_i2c_iomux_cfg[0].pin = (enum HAL_IOMUX_PIN_T)cfg->scl;

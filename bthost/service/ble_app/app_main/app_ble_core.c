@@ -456,6 +456,7 @@ static void app_ble_stub_user_data_fill_handler(void *param)
         if (app_ble_get_user_register() & ~(1 << USER_STUB))
         {
             LOG_I("%s have other user register 0x%x", __func__, app_ble_get_user_register());
+            adv_enable = true; // Add by Jay, fixed the BLE adv not enable.
         }
         else if (false == ble_core_stub_adv_enable)
         {
@@ -471,7 +472,7 @@ static void app_ble_stub_user_data_fill_handler(void *param)
         }
 #endif
     } while(0);
-
+    LOG_I(" [%s]                 adv_enable:[%d]", __func__, adv_enable);
     app_ble_data_fill_enable(USER_STUB, adv_enable);
 }
 

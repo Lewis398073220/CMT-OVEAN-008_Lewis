@@ -127,7 +127,7 @@ static void _tota_spp_tx_done(void)
 
 static void _tota_spp_data_receive_handle(uint8_t * buf, uint16_t len)
 {
-    app_anc_tota_cmd_received(buf, len);
+    app_anc_tota_cmd_received(buf, len); //jay
 }
 
 extern uint32_t __anc_start[];

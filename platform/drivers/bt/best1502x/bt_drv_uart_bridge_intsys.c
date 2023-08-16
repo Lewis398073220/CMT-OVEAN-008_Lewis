@@ -150,6 +150,7 @@ static unsigned int bt_rx(const unsigned char *data, unsigned int len)
     if (processed > 0) {
         memcpy(bt_rx_data_p + bt_rx_len, data, processed);
 
+        BT_DRV_TRACE(0,"[%s], Jay", __func__);
         BT_DRV_TRACE(0,"[RX]:");
         DUMP8("%02x ",bt_rx_data_p + bt_rx_len,processed);
         bt_bridge_mode_rx_callback(data, len);

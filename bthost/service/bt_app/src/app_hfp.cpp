@@ -1334,6 +1334,8 @@ void app_hfp_event_callback(uint8_t device_id, btif_hf_channel_t* chan, struct h
     case BTIF_HF_EVENT_CALL_IND:
         app_hfp_status_check(device_id, ctx->event);
         hfp_call_ind_handler(device_id, chan, ctx);
+
+        hfp_handle_key(HFP_KEY_CLEAR_MUTE); //Add by jay.
         break;
     case BTIF_HF_EVENT_CALLSETUP_IND:
         app_hfp_status_check(device_id, ctx->event);

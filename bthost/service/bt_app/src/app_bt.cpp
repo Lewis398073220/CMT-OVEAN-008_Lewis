@@ -134,6 +134,11 @@ extern "C"
 
 #include "app_media_player.h"
 
+#if defined(__USE_3_5JACK_CTR__)
+#include "app_user.h"
+#include "app_bt_media_manager.h"
+#endif /*__USE_3_5JACK_CTR__*/
+
 extern "C" bool app_anc_work_status(void);
 
 extern uint8_t bt_media_current_music_get(void);
@@ -2698,6 +2703,10 @@ void app_bt_sniff_manager_process(const btif_event_t *Event)
     }
 }
 
+#ifdef CMT_008_UI
+    static bool power_on_flag = FALSE;
+#endif
+
 APP_BT_GOLBAL_HANDLE_HOOK_HANDLER app_bt_global_handle_hook_handler[APP_BT_GOLBAL_HANDLE_HOOK_USER_QTY] = {0};
 void app_bt_global_handle_hook(const btif_event_t *Event)
 {
@@ -2885,9 +2894,32 @@ void app_bt_global_handle(const btif_event_t *Event)
     #endif
             }
 #endif
+#ifdef CMT_008_UI
+        if(btif_me_get_callback_event_type(Event) == BTIF_BTEVENT_LINK_CONNECT_IND)
+        {
+            media_PlayAudio(AUD_ID_BT_CONNECTED, 0);
+            power_on_flag = TRUE;
+            app_stop_10_second_timer(APP_POWEROFF_TIMER_ID);
+        }
+#endif /* CMT_008_UI */
+#ifdef CMT_008_UI_LED_INDICATION
+        if(btif_me_get_callback_event_type(Event) == BTIF_BTEVENT_LINK_CONNECT_IND)
+            app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+#endif /* CMT_008_UI_LED_INDICATION */
+
+
             break;
         case BTIF_BTEVENT_LINK_DISCONNECT:
         {
+        TRACE(1,"++++ BTIF_BTEVENT_LINK_DISCONNECT [%s]",__func__);
+#ifdef CMT_008_UI
+        if(power_on_flag)
+            media_PlayAudio(AUD_ID_BT_DIS_CONNECT, 0);
+
+        app_start_10_second_timer(APP_POWEROFF_TIMER_ID);
+        //btif_me_set_accessible_mode(BTIF_BAM_NOT_ACCESSIBLE,NULL);
+#endif /* CMT_008_UI */
+
 #ifdef CUSTOM_BITRATE
             app_ibrt_user_a2dp_codec_info_action();
 #endif
@@ -3264,12 +3296,14 @@ static int app_bt_handle_process(APP_MESSAGE_BODY *msg_body)
     {
         case APP_BT_REQ_ACCESS_MODE_SET:
             old_access_mode = g_bt_access_mode;
+            TRACE(2,"%s, JAY PAIR 0  mode:[%d]",__func__ , msg_body->message_Param0);
             app_bt_accessmode_set(msg_body->message_Param0);
             if (msg_body->message_Param0 == BTIF_BAM_GENERAL_ACCESSIBLE &&
                 old_access_mode != BTIF_BAM_GENERAL_ACCESSIBLE)
             {
 #ifndef FPGA
                 app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN);
+                TRACE(1,"%s, JAY PAIR 1  ",__func__ );
 #ifdef MEDIA_PLAYER_SUPPORT
                 media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
 #endif
@@ -3279,7 +3313,8 @@ static int app_bt_handle_process(APP_MESSAGE_BODY *msg_body)
             else
             {
 #ifndef FPGA
-                app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+                TRACE(1,"%s, JAY JAY PAIR OUT 2",__func__);
+                //app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN); /* disable by jay */
 #endif
             }
             break;
@@ -3485,6 +3520,7 @@ void app_bt_start_linkloss_reconnect(bt_bdaddr_t *remote, bool is_for_source_dev
 
     if (!is_for_source_device)
     {
+        TRACE(1, " jay [%s] ", __func__);
         app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 
 #ifdef __IAG_BLE_INCLUDE__
@@ -3517,8 +3553,10 @@ void app_bt_start_connfail_reconnect(bt_bdaddr_t *remote, uint8_t errcode, bool 
             if (!is_for_source_device)
             {
                 #if defined(IBRT) && defined(FREEMAN_ENABLED_STERO)
+                TRACE(1, " jay0 [%s] ", __func__);
                 app_ibrt_if_set_access_mode(IBRT_BAM_CONNECTABLE_ONLY);
                 #else
+                TRACE(1, " jay [%s] ", __func__);
                 app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
                 #endif
 #ifdef  __IAG_BLE_INCLUDE__
@@ -3541,8 +3579,10 @@ void app_bt_start_connfail_reconnect(bt_bdaddr_t *remote, uint8_t errcode, bool 
             if (!is_for_source_device)
             {
 #if defined(IBRT) && defined(FREEMAN_ENABLED_STERO)
+                TRACE(1, " jay0 [%s] ", __func__);
                 app_ibrt_if_set_access_mode(IBRT_BAM_CONNECTABLE_ONLY);
 #else
+                TRACE(1, " jay [%s] ", __func__);
                 app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #endif
 #ifdef  __IAG_BLE_INCLUDE__
@@ -3564,6 +3604,7 @@ void app_bt_start_connfail_reconnect(bt_bdaddr_t *remote, uint8_t errcode, bool 
 #if defined(IBRT) && defined(FREEMAN_ENABLED_STERO)
     if (app_bt_get_poweron_reconnect_device() == NULL)
     {
+        TRACE(1, "%s [Enter pairing jay] ", __func__);
         app_ibrt_if_enter_freeman_pairing();
 #ifdef GFPS_ENABLED
         app_enter_fastpairing_mode();
@@ -3824,6 +3865,7 @@ void app_bt_update_connectable_mode_after_connection_management(void)
             curr_device = app_bt_get_device(deviceId);
             if (!curr_device->profile_mgr.profile_connected)
             {
+                TRACE(1, " jay [%s] ", __func__);
                 app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
                 return;
             }
@@ -3914,6 +3956,7 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
                 {
                     if (++profile_mgr->reconnect_cnt < APP_BT_PROFILE_OPENNING_RECONNECT_RETRY_LIMIT_CNT)
                     {
+                        TRACE(1, " jay0 [%s] ", __func__);
                         app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #ifdef  __IAG_BLE_INCLUDE__
                         app_ble_start_connectable_adv(BLE_ADVERTISING_INTERVAL);
@@ -3926,6 +3969,7 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
                 {
                     if (++profile_mgr->reconnect_cnt < APP_BT_PROFILE_RECONNECT_RETRY_LIMIT_CNT)
                     {
+                        TRACE(1, " jay [%s] ", __func__);
                         app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #ifdef  __IAG_BLE_INCLUDE__
                         app_ble_start_connectable_adv(BLE_ADVERTISING_INTERVAL);
@@ -4087,6 +4131,7 @@ void app_bt_profile_connect_manager_hf(int id, btif_hf_channel_t* Chan, struct h
 
 #if defined(MEDIA_PLAYER_SUPPORT)&& !defined(IBRT)
         media_PlayAudio(AUD_ID_BT_DIS_CONNECT, id);
+        TRACE(1,"++++ play disconnect [%s]",__func__);
 #endif
 #ifdef __INTERCONNECTION__
         app_interconnection_disconnected_callback();
@@ -4207,6 +4252,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
                 {
                     if (++profile_mgr->reconnect_cnt < APP_BT_PROFILE_OPENNING_RECONNECT_RETRY_LIMIT_CNT)
                     {
+                        TRACE(1, " jay0 [%s] ", __func__);
                         app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #ifdef __IAG_BLE_INCLUDE__
                         app_ble_start_connectable_adv(BLE_ADVERTISING_INTERVAL);
@@ -4220,6 +4266,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
                 {
                     if (++profile_mgr->reconnect_cnt < APP_BT_PROFILE_RECONNECT_RETRY_LIMIT_CNT)
                     {
+                        TRACE(1, " jay [%s] ", __func__);
                         app_bt_accessmode_set(BTIF_BAM_CONNECTABLE_ONLY);
 #ifdef __IAG_BLE_INCLUDE__
                         app_ble_start_connectable_adv(BLE_ADVERTISING_INTERVAL);
@@ -4361,6 +4408,7 @@ void app_bt_profile_connect_manager_a2dp(int id, a2dp_stream_t *Stream, const   
 
 #if defined(MEDIA_PLAYER_SUPPORT)&& !defined(IBRT)
         media_PlayAudio(AUD_ID_BT_DIS_CONNECT, id);
+        TRACE(1,"++++ play disconnect [%s]",__func__);
 #endif
 #ifdef __INTERCONNECTION__
         app_interconnection_disconnected_callback();
@@ -4815,6 +4863,9 @@ void app_bt_init(void)
 
 #ifdef RESUME_MUSIC_AFTER_CRASH_REBOOT
     app_bt_resume_music_after_crash_reboot_init();
+#endif
+#ifdef CMT_008_UI
+    power_on_flag = FALSE;
 #endif
 }
 
@@ -6047,6 +6098,8 @@ void app_bt_ibrt_reconnect_mobile_profile(bt_bdaddr_t *mobile_addr)
     {
         app_bt_reconnect_a2dp_profile(mobile_addr);
     }
+
+    media_PlayAudio(AUD_ID_BT_CONNECTED, 0); //add by jay
 }
 
 void app_bt_ibrt_connect_mobile_a2dp_profile(const bt_bdaddr_t *addr)
@@ -6400,7 +6453,7 @@ bool app_bt_ctkd_is_connecting_mobile_pending(void)
 void app_bt_ctkd_connecting_mobile_handler(void)
 {
 #if !defined(IBRT_UI_V1)
-    return;
+j    return;
 #endif
 
     app_bt_ctkd_set_connecting_mobile_pending(false);

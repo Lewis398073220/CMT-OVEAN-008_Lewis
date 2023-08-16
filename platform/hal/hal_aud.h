@@ -194,6 +194,13 @@ enum AUD_IO_PATH_T {
     AUD_INPUT_PATH_HEARING,
     AUD_INPUT_PATH_DC_CALIB,
 
+    /** Add by Jay, copy from pang for spp test **/
+    AUD_INPUT_PATH_LFFMIC_SPP,
+    AUD_INPUT_PATH_RFFMIC_SPP,
+    AUD_INPUT_PATH_LFBMIC_SPP,
+    AUD_INPUT_PATH_RFBMIC_SPP,
+    /** end add **/
+
     // Output path
     AUD_OUTPUT_PATH_SPEAKER,
 };

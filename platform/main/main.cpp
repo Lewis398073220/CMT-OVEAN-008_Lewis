@@ -159,6 +159,26 @@ int tgt_hardware_setup(void)
         hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_indicator_cfg, 1);
         hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_indicator_cfg.pin, HAL_GPIO_DIR_IN, 1);
     }
+
+#ifdef CMT_008_CST812T_TOUCH
+    if (cfg_hw_pio_touch_irq_detecter.pin != HAL_IOMUX_PIN_NUM)
+    {
+        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_pio_touch_irq_detecter, 1);
+        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_pio_touch_irq_detecter.pin, HAL_GPIO_DIR_IN, 0);
+    }
+#endif /*CMT_008_CST812T_TOUCH*/
+#if 0
+    TRACE_IMM(1, "jay 1:%d\n",hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+
+    hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, sizeof(cfg_hw_ldo_enable)/sizeof(struct HAL_IOMUX_PIN_FUNCTION_MAP));
+
+    if (cfg_hw_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
+    {TRACE_IMM(1, "jay 2:%d\n",hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, 1);
+        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin, HAL_GPIO_DIR_OUT, 1);
+    }
+    TRACE_IMM(1, "jay 3:%d\n",hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+#endif /*0*/
     return 0;
 }
 
@@ -294,7 +314,7 @@ void boot_secure_nse_boot_init(void)
 #endif
 
 #if RTT_APP_SUPPORT || defined(CHIP_SUBSYS_SENS)
-int main_enter(void)
+J int main_enter(void)
 #else
 int main(void)
 #endif
@@ -391,6 +411,14 @@ int main(void)
     system_power_on_callback();
 
 #ifndef FPGA
+/* Add by Jay, debug log to show software version. */
+    TRACE(0, "+++++++++++++++++++++++++++");
+    TRACE(0, "+                         +");
+    TRACE(0, "+     FW_VER=%s        +",REVISION_FW);
+    TRACE(0, "+                         +");
+    TRACE(0, "+++++++++++++++++++++++++++");
+/*Add by Jay, end. */
+
     hal_norflash_show_id_state(HAL_FLASH_ID_0, true);
 
     // Software will load the factory data and user data from the bottom TWO sectors from the flash,
@@ -504,6 +532,28 @@ int main(void)
 #ifdef SLIM_BTC_ONLY
         ret = app_init_btc();
 #else
+
+#ifdef CMT_008_LDO_ENABLE
+        //hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, sizeof(cfg_hw_ldo_enable)/sizeof(struct HAL_IOMUX_PIN_FUNCTION_MAP));
+        TRACE_IMM(3, "%s, jay4 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+
+        if (cfg_hw_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
+        {
+            TRACE_IMM(3, "%s,jay5 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+        
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin, HAL_GPIO_DIR_OUT, 1);
+        }
+        TRACE_IMM(2, "%s,jay6 init:%d  %d\n",__func__,hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin),hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_enable.pin));
+
+#endif /*CMT_008_LDO_ENABLE*/
+
+#if defined(__USE_3_5JACK_CTR__)
+        if (cfg_hw_pio_3p5_jack_detecter.pin != HAL_IOMUX_PIN_NUM){
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_pio_3p5_jack_detecter, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_pio_3p5_jack_detecter.pin, HAL_GPIO_DIR_IN, 0);
+        }
+#endif /* __USE_3_5JACK_CTR__ */
         ret = app_init();
 #endif
 

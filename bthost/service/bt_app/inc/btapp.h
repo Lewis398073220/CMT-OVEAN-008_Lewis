@@ -543,13 +543,45 @@ void btapp_a2dp_report_speak_gain(void);
 #define   BTAPP_RELEASE_KEY			APP_KEY_CODE_NONE
 #endif
 #else
+
+#ifdef __CST816S_TOUCH__
+#define   BTAPP_FUNC_KEY            APP_KEY_CODE_PWR
+#define   BTAPP_VOLUME_UP_KEY       APP_KEY_CODE_FN1
+#define   BTAPP_VOLUME_DOWN_KEY     APP_KEY_CODE_FN2
+#define   BTAPP_FORWARD_KEY         APP_KEY_CODE_FN3
+#define   BTAPP_BACKWARD_KEY        APP_KEY_CODE_FN4
+#define   BTAPP_LONGPRESS_KEY       APP_KEY_CODE_FN5
+#define   BTAPP_DOUBLECLICK_KEY     APP_KEY_CODE_FN6
+#define   BTAPP_MFB_KEY             APP_KEY_CODE_FN9 // for custom MFB
+#else /*__CST816S_TOUCH__*/
+
 #define   BTAPP_FUNC_KEY			APP_KEY_CODE_PWR
 #define   BTAPP_VOLUME_UP_KEY		APP_KEY_CODE_FN1
 #define   BTAPP_VOLUME_DOWN_KEY		APP_KEY_CODE_FN2
+#endif /*__CST816S_TOUCH__*/
+
 #ifdef SUPPORT_SIRI
 #define   BTAPP_RELEASE_KEY			APP_KEY_CODE_NONE
 #endif
 #endif
+
+#define   BTAPP_ANC_KEY             APP_KEY_CODE_FN7  //add by jay
+#define   BTAPP_QUICK_MONIORT_KEY   APP_KEY_CODE_FN8  //add by jay
+
+#ifdef __CST816S_TOUCH__
+void Touch_gesture_up(void);
+void TOUCH_gesture_down(void);
+void TOUCH_gesture_left(void);
+void TOUCH_gesture_right(void);
+void TOUCH_gesture_click(void);
+void TOUCH_gesture_double_click(void);
+void TOUCH_gesture_triple_click(void);
+void TOUCH_gesture_long_press(void);
+void TOUCH_gesture_cover_press(void);
+void TOUCH_gesture_cover_leave(void);
+
+#endif /*__CST816S_TOUCH__*/
+
 void bt_key_init(void);
 void bt_key_send(APP_KEY_STATUS *status);
 void bt_key_handle(void);

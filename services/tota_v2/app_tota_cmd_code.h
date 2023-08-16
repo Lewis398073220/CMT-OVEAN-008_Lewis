@@ -151,6 +151,8 @@ typedef enum
     // TODO:?
     OP_TOTA_RAW_DATA_SET_CMD = 0x9100,
 
+    OP_TOTA_CMT008_SPP_TEST_CMD = 0x9200, //Add by Jay, for production test command.
+
     /* commond count */
     OP_TOTA_COMMAND_COUNT,
     /* to mark that it's a data packet */
@@ -180,6 +182,8 @@ typedef enum
     TOTA_MIC_SWITCH_FAILED,
     TOTA_EQ_GET_FAILED,
     TOTA_RECEIVE_STREAM_TIMEOUT,
+
+    TOTA_CMT_008_NOT_NEED_STATUS, /* Add by Jay */
     // TO ADD: new return status
 } APP_TOTA_CMD_RET_STATUS_E;
 

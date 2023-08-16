@@ -150,6 +150,10 @@ void app_ibrt_customif_pairing_mode_entry()
     uint8_t select_sco_device = app_bt_audio_get_curr_playing_sco();
     struct BT_DEVICE_T *curr_device = NULL;
 
+#ifdef CMT_008_UI_LED_INDICATION
+    app_status_indication_set(APP_STATUS_INDICATION_BOTHSCAN); //pairing LED indication
+#endif /*CMT_008_UI_LED_INDICATION*/
+
     LOG_I("custom_ui pairing mode entry: disc_sco_during_paring %d", p_app_ui_config->pairing_with_disc_sco);
 
     if (p_app_ui_config->pairing_with_disc_sco && select_sco_device != BT_DEVICE_INVALID_ID)
@@ -186,6 +190,10 @@ void app_ibrt_customif_pairing_mode_exit()
 {
     app_ui_config_t* p_app_ui_config = app_ui_get_config();
     uint8_t resume_sco_device = g_device_id_need_resume_sco;
+
+#ifdef CMT_008_UI_LED_INDICATION
+    app_status_indication_set(APP_STATUS_INDICATION_PAGESCAN);
+#endif /*CMT_008_UI_LED_INDICATION*/
 
     LOG_I("custom_ui pairing mode exit: resume_sco_device %x", resume_sco_device);
 
@@ -1399,7 +1407,7 @@ int app_ibrt_customif_ui_start(void)
     app_ibrt_if_config(&config);
 
 #ifdef BT_ALWAYS_IN_DISCOVERABLE_MODE
-    btif_me_configure_keeping_both_scan(true);
+j    btif_me_configure_keeping_both_scan(true);
 #endif
 
     app_spp_is_connected_register(app_ibrt_customif_set_profile_delaytime_on_spp_connect);
@@ -1407,6 +1415,8 @@ int app_ibrt_customif_ui_start(void)
 #ifdef __IAG_BLE_INCLUDE__
     app_ble_custom_init();
 #endif /*__IAG_BLE_INCLUDE__*/
+
+LOG_I("  pairing:[%d], [%s]",config.enter_pairing_on_mobile_disconnect, __func__);
     return 0;
 }
 #endif // IBRT_UI_V2
