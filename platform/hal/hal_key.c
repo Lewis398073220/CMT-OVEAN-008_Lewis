@@ -59,25 +59,22 @@ typedef uint32_t                            GPIO_MAP_T[GPIO_MAP_WORD_CNT];
 #endif
 
 #ifndef CFG_SW_KEY_LLPRESS_THRESH_MS
-//#define CFG_SW_KEY_LLPRESS_THRESH_MS        5000 // Disabled by Jay. powre_on
-#define CFG_SW_KEY_LLPRESS_THRESH_MS        2000
+#define CFG_SW_KEY_LLPRESS_THRESH_MS        2000 // Modified by Jay, changed from '5000' to '2000'. powre_off
 #endif
 #ifndef CFG_SW_KEY_LPRESS_THRESH_MS
-#define CFG_SW_KEY_LPRESS_THRESH_MS         1000//1500  // Modified by Jay.
+#define CFG_SW_KEY_LPRESS_THRESH_MS         1500
 #endif
 #ifndef CFG_SW_KEY_REPEAT_THRESH_MS
-#define CFG_SW_KEY_REPEAT_THRESH_MS         1000//500  // Modified by Jay.
+#define CFG_SW_KEY_REPEAT_THRESH_MS         500
 #endif
 #ifndef CFG_SW_KEY_DBLCLICK_THRESH_MS
 #define CFG_SW_KEY_DBLCLICK_THRESH_MS       400
 #endif
 #ifndef CFG_SW_KEY_INIT_DOWN_THRESH_MS
-//#define CFG_SW_KEY_INIT_DOWN_THRESH_MS      200 // Disabled by Jay. powre_off
 #define CFG_SW_KEY_INIT_DOWN_THRESH_MS      200
 #endif
 #ifndef CFG_SW_KEY_INIT_LPRESS_THRESH_MS
-//#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    3000 // Disabled by Jay. pairing
-#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    4000
+#define CFG_SW_KEY_INIT_LPRESS_THRESH_MS    4000 // Modified by Jay, changed from '3000' to '4000'. pairing
 #endif
 #ifndef CFG_SW_KEY_INIT_LLPRESS_THRESH_MS
 #define CFG_SW_KEY_INIT_LLPRESS_THRESH_MS   10000
