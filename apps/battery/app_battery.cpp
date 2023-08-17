@@ -1204,7 +1204,7 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
 
             osTimerStop(app_battery_timer);
             osTimerStop(app_ntc_timer);
-            TRACE(1, "[%s] Temp anomaly need shutdown.", __func__);
+            TRACE(1, "[%s] Temp abnormal need shutdown.", __func__);
             app_shutdown();
         }
     }
