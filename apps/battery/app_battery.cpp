@@ -553,7 +553,6 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
             media_PlayAudio(AUD_ID_BT_CHARGE_FINISH, 0);
 #endif
 #endif
-
             /* Add by Jay, disable charger pin, since now battery full. */
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
@@ -722,13 +721,14 @@ int app_battery_open(void)
 
     if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
     {
-        //hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_detecter_cfg, 1); /* disable by jay */
-        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_enable_cfg, 1); //modified by jay
-        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 1);
+        /* Modified by Jay */
+        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_enable_cfg, 1);
+        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 0);
     }
 
     if (app_battery_charger_indication_open() == APP_BATTERY_CHARGER_PLUGIN)
     {
+        TRACE(2,"[%s]       status [ APP_BATTERY_CHARGER_PLUGIN ]", __func__);
         app_battery_measure.status = APP_BATTERY_STATUS_CHARGING;
         app_battery_measure.start_time = hal_sys_timer_get();
         //pmu_charger_plugin_config();
@@ -954,7 +954,8 @@ static void app_battery_pluginout_debounce_handler(void const *param)
         {
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
-                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 0);
+                //hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 0);  //Disable by Jay
+                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);      //Add bu Jay
             }
             app_battery_measure.start_time = hal_sys_timer_get();
         }
@@ -962,7 +963,8 @@ static void app_battery_pluginout_debounce_handler(void const *param)
         {
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
-                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 1);
+                //hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 1);  //Disable by Jay
+                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);      //Add bu Jay
             }
         }
         app_battery_event_process(APP_BATTERY_STATUS_CHARGING, status_charger);
@@ -1018,7 +1020,7 @@ int app_battery_charger_indication_open(void)
     enum APP_BATTERY_CHARGER_T status = APP_BATTERY_CHARGER_QTY;
     uint8_t cnt = 0;
 
-    APP_BATTERY_TRACE(1,"%s",__func__);
+    APP_BATTERY_TRACE(1,"[%s]__",__func__);
 
     pmu_charger_init();
 
@@ -1081,8 +1083,8 @@ static struct NTC_CAPTURE_MEASURE_T ntc_capture_measure;
 void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
 {
 #if 0
-    TRACE(1,"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++[%d][%d]",\
-    hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin),\
+    TRACE(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++ enable_pin[%d], detecter_pin[%d]",\
+    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin),\
     hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin));
 #endif
     uint32_t meanVolt = 0;
@@ -1125,7 +1127,7 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
         
         discharge_temperature_error_num=0;
 
-        /* If current temperature more than 45?? or less than 0??. */
+        /* If current temperature more than 45 degrees celsius or less than 0 degrees celsius. */
         if((ntc_capture_measure.currvolt<CHARGE_HIGH_TEMPERATURE)||(ntc_capture_measure.currvolt>CHARGE_LOW_TEMPERATURE))
         {
             charge_temperature_error_num++;
@@ -1355,7 +1357,7 @@ int app_battery_charger_indication_open(void)
 {
     enum APP_BATTERY_CHARGER_T status = APP_BATTERY_CHARGER_QTY;
 
-    APP_BATTERY_TRACE(1,"%s",__func__);
+    APP_BATTERY_TRACE(1,"[%s]",__func__);
 
     pmu_charger_init();
 
