@@ -196,6 +196,7 @@ static bool charge_protection_flag=0;
 static int8_t discharge_temperature_error_num=0;
 
 static void app_create_ntc_timer_open(void);
+static void app_stop_ntc_timer(void);
 #endif /*CMT_008_NTC_DETECT*/
 
 static enum APP_BATTERY_CHARGER_T app_battery_charger_forcegetstatus(void);
@@ -558,6 +559,10 @@ int app_battery_handle_process_charging(uint32_t status,  union APP_BATTERY_MSG_
             {
                 hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin);
             }
+            app_battery_stop();
+#ifdef  CMT_008_NTC_DETECT
+            app_stop_ntc_timer();
+#endif /*CMT_008_NTC_DETECT*/
             /* Add by Jay end. */
         }
     }
@@ -713,6 +718,14 @@ int app_battery_open(void)
 
     app_set_threadhandle(APP_MODUAL_BATTERY, app_battery_handle_process);
 
+    /* Add by Jay */
+    if(app_battery_full_charger_detecter_cfg.pin != HAL_IOMUX_PIN_NUM)
+    {
+        hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *) &app_battery_full_charger_detecter_cfg, 1);
+        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_full_charger_detecter_cfg.pin, HAL_GPIO_DIR_IN, 0);
+    }
+    /* Add by Jay, end. */
+
     if (app_battery_ext_charger_detecter_cfg.pin != HAL_IOMUX_PIN_NUM)
     {
         hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&app_battery_ext_charger_detecter_cfg, 1);
@@ -831,7 +844,7 @@ static int app_battery_charger_handle_process(void)
     {
         if (app_battery_ext_charger_detecter_cfg.pin != HAL_IOMUX_PIN_NUM)
         {
-            if (hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin))
+            if (!hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin)) //Modified by Jay
             {
                 ext_pin_full_charge_cnt++;
             }
@@ -955,7 +968,7 @@ static void app_battery_pluginout_debounce_handler(void const *param)
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
                 //hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 0);  //Disable by Jay
-                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);      //Add bu Jay
+                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);      //Add by Jay
             }
             app_battery_measure.start_time = hal_sys_timer_get();
         }
@@ -964,7 +977,7 @@ static void app_battery_pluginout_debounce_handler(void const *param)
             if (app_battery_ext_charger_enable_cfg.pin != HAL_IOMUX_PIN_NUM)
             {
                 //hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin, HAL_GPIO_DIR_OUT, 1);  //Disable by Jay
-                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 1);      //Add bu Jay
+                hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin, HAL_GPIO_DIR_OUT, 0);      //Add by Jay
             }
         }
         app_battery_event_process(APP_BATTERY_STATUS_CHARGING, status_charger);
@@ -1011,6 +1024,11 @@ static void app_create_ntc_timer_open(void)
     osTimerStart(app_ntc_timer, APP_NTC_DETECT_TIMER_MS);
 
     //hal_gpio_pin_set((enum HAL_GPIO_PIN_T)Cfg_ntc_volt_ctr.pin);
+}
+
+static void app_stop_ntc_timer(void)
+{
+    osTimerStop(app_ntc_timer);
 }
 
 #endif /*CMT_008_NTC_DETECT*/
@@ -1083,9 +1101,10 @@ static struct NTC_CAPTURE_MEASURE_T ntc_capture_measure;
 void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
 {
 #if 0
-    TRACE(1,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++ enable_pin[%d], detecter_pin[%d]",\
-    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_enable_cfg.pin),\
-    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)app_battery_ext_charger_detecter_cfg.pin));
+    TRACE(1,"++++++++++++++++++++++++ enable_pin[%d], full_dete[%d], detecter_pin[%d]",\
+    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T) app_battery_ext_charger_enable_cfg.pin),\
+    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T) app_battery_full_charger_detecter_cfg.pin),\
+    hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T) app_battery_ext_charger_detecter_cfg.pin));
 #endif
     uint32_t meanVolt = 0;
     TRACE(3,"%s %d irq:0x%04x",__func__, volt, irq_val);

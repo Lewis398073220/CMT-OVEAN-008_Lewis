@@ -234,6 +234,7 @@ extern const struct CODEC_DAC_VOL_T codec_dac_hfp_vol[TGT_VOLUME_LEVEL_QTY];
 extern const struct HAL_IOMUX_PIN_FUNCTION_MAP app_battery_ext_charger_enable_cfg;
 extern const struct HAL_IOMUX_PIN_FUNCTION_MAP app_battery_ext_charger_detecter_cfg;
 extern const struct HAL_IOMUX_PIN_FUNCTION_MAP app_battery_ext_charger_indicator_cfg;
+extern const struct HAL_IOMUX_PIN_FUNCTION_MAP app_battery_full_charger_detecter_cfg; //Add by Jay
 
 #ifdef __cplusplus
 }
