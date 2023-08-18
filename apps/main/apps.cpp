@@ -2832,7 +2832,7 @@ j                    app_bt_accessmode_set(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
 #endif
 
 #ifdef __CST816S_TOUCH__
-            //ctp_hynitron_update();
+            //ctp_hynitron_update(); /* Not need to auto update the touch FW, add by Jay. */
             cst816s_open_module();
 #endif /*__CST816S_TOUCH__*/
 
