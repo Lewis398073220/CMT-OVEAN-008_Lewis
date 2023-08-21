@@ -157,6 +157,18 @@ U16 bt_accessory_feature_feature = BTIF_HF_CUSTOM_FEATURE_SUPPORT;
 #define APP_BT_PROFILE_RECONNECT_WAIT_SCO_DISC_MS (3000)
 
 //reconnect = (INTERVAL+PAGETO)*CNT = (3000ms+5000ms)*15 = 120s
+/*====================================================================================================
+08 disconnect reconnect time = (RECONNECT_RETRY_INTERVAL_MS+PAGETO)*RECONNECT_RETRY_LIMIT_CNT
+                             = (3000ms+5000ms)*15
+                             = 120s
+
+PAGETO = BTIF_BT_DEFAULT_PAGE_TIMEOUT_IN_MS
+------------------------------------------------------------------------------------------------------                             
+openning reconnect time      = (RECONNECT_RETRY_INTERVAL_MS+PAGETO)*OPENNING_RECONNECT_RETRY_LIMIT_CNT
+                             = (3000ms+5000ms)*2
+                             = 16s
+======================================================================================================*/
+
 #define APP_BT_PROFILE_RECONNECT_RETRY_INTERVAL_MS (3000)
 #define APP_BT_PROFILE_OPENNING_RECONNECT_RETRY_LIMIT_CNT   (2)
 #define APP_BT_PROFILE_RECONNECT_RETRY_LIMIT_CNT (15)
@@ -6078,7 +6090,7 @@ void app_bt_ibrt_reconnect_mobile_profile(bt_bdaddr_t *mobile_addr)
     bool profile_concurrency_supported = true;
 #if defined(IBRT) && defined(IBRT_UI_V1)
     app_ibrt_ui_t *p_ibrt_ui = app_ibrt_ui_get_ctx();
-    profile_concurrency_supported = p_ibrt_ui->config.profile_concurrency_supported;
+j    profile_concurrency_supported = p_ibrt_ui->config.profile_concurrency_supported;
 #elif defined(IBRT) && defined(IBRT_CORE_V2_ENABLE)
     ibrt_core_param_t *p_ibrt_core_config = app_tws_ibrt_get_custom_config();
     profile_concurrency_supported = p_ibrt_core_config->profile_concurrency_supported;

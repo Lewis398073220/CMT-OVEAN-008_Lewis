@@ -19,7 +19,7 @@
 #define  IBRT_UI_ROLE_SWITCH_TIME_THRESHOLD                         (2)  //
 #define  IBRT_UI_ROLE_SWITCH_THRESHOLD_WITH_RSSI                    (10) //dbm
 
-#define  IBRT_UI_RECONNECT_MOBILE_MAX_TIMES                 (20)
+#define  IBRT_UI_RECONNECT_MOBILE_MAX_TIMES                 (28) //(20) /* Modified by Jay, changed from 20 to 28. default: 20 = 231s. */
 #define  IBRT_UI_RECONNECT_IBRT_MAX_TIMES                   (20)
 
 #define  IBRT_MOBILE_PAGE_TIMEOUT                           (0x2000)

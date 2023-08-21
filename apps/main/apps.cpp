@@ -408,7 +408,7 @@ void app_fast_pairing_timeout_timehandler(void)
 APP_10_SECOND_TIMER_STRUCT app_10_second_array[] =
 {
 #ifdef BT_BUILD_WITH_CUSTOMER_HOST
-    INIT_APP_TIMER(APP_PAIR_TIMER_ID, 0, 0, 6, NULL),
+j    INIT_APP_TIMER(APP_PAIR_TIMER_ID, 0, 0, 6, NULL),
     INIT_APP_TIMER(APP_POWEROFF_TIMER_ID, 0, 0, 90, NULL),
 #else
     INIT_APP_TIMER(APP_PAIR_TIMER_ID, 0, 0, 6, PairingTransferToConnectable),

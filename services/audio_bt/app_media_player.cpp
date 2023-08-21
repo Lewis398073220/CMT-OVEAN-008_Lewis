@@ -1322,7 +1322,7 @@ void media_runtime_audio_prompt_update(uint16_t id, uint8_t** ptr, uint32_t* len
     uint8_t *sound_data = NULL;
     uint32_t length = 0;
 #ifdef CMT_008_UI
-    TRACE(2,"  [%s] play audio prompt id:[%d]",__func__,id);
+    TRACE(2,"  [%s] play audio prompt id:[0x%x]",__func__,id);
 #endif /*CMT_008_UI*/
 
     switch (id) {
