@@ -106,6 +106,10 @@ ifeq ($(CMT_008_SPP_GET_FW),1)
 KBUILD_CPPFLAGS += -DCMT_008_SPP_GET_FW
 endif
 
+export CMT_008_BLE_ENABLE ?= 1
+ifeq ($(CMT_008_BLE_ENABLE),1)
+KBUILD_CPPFLAGS += -DCMT_008_BLE_ENABLE
+endif
 
 #### Add by Jay, end. #####
 
