@@ -1606,7 +1606,7 @@ int app_deinit(int deinit_case)
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio_standalone_locally(AUD_ID_POWER_OFF, 0);
 #endif
-        osDelay(1500); /* Modified by Jay, changed from 1000 to 1500. */
+        osDelay(2000); /* Modified by Jay, changed from 1000 to 2000. */
 #endif
         af_close();
 #if defined(__THIRDPARTY) && defined(__AI_VOICE__)
