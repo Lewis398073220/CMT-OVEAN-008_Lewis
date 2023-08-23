@@ -1139,6 +1139,10 @@ void app_factory_reset(void)
     nv_record_rebuild(NV_REBUILD_ALL);
 	osDelay(500);
 
+    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+    osDelay(800);
+
     app_ibrt_if_enter_freeman_pairing();
 
 	//app_bt_reconnect_idle_mode();
