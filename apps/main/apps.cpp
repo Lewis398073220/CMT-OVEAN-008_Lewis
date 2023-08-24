@@ -1145,6 +1145,8 @@ void app_factory_reset(void)
 
     app_ibrt_if_enter_freeman_pairing();
 
+    app_anc_switch(APP_ANC_MODE1);
+
 	//app_bt_reconnect_idle_mode();
 //#ifdef  __IAG_BLE_INCLUDE__
 	//app_ble_force_switch_adv(BLE_SWITCH_USER_BT_CONNECT, false);
