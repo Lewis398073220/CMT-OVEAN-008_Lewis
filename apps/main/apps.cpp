@@ -1117,7 +1117,7 @@ void app_factory_reset(void)
 	LinkDisconnectDirectly(false);
 	osDelay(800);
 	
-    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0); //add by jay
+    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 
 #if 0
 	struct nvrecord_env_t *nvrecord_env;
@@ -1144,7 +1144,8 @@ void app_factory_reset(void)
     osDelay(800);
 
     app_ibrt_if_enter_freeman_pairing();
-
+    osDelay(1000);
+    media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
     app_anc_switch(APP_ANC_MODE1);
 
 	//app_bt_reconnect_idle_mode();

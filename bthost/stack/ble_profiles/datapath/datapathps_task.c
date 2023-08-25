@@ -42,6 +42,8 @@ static void send_notifiction(uint8_t conidx, const uint8_t* ptrData, uint32_t le
 {
     datapathps_env_t *datapathps_env = PRF_ENV_GET(DATAPATHPS, datapathps);
 
+    TRACE(1, "   [%s]   isNotificationEnabled:[%d]", __func__, datapathps_env->isNotificationEnabled[conidx]);
+
     if (datapathps_env->isNotificationEnabled[conidx])
     {
         co_buf_t* p_buf = NULL;
@@ -67,6 +69,7 @@ __STATIC int send_data_via_notification_handler(ke_msg_id_t const msgid,
         ke_task_id_t const dest_id,
         ke_task_id_t const src_id)
 {
+    TRACE(1, "   [%s]   TASK", __func__);
     send_notifiction(param->connecionIndex, param->value, param->length);
     return (KE_MSG_CONSUMED);
 }
@@ -100,6 +103,7 @@ __STATIC int send_data_via_indication_handler(ke_msg_id_t const msgid,
                                       ke_task_id_t const dest_id,
                                       ke_task_id_t const src_id)
 {
+    TRACE(1, "   [%s]   TASK", __func__);
     send_indication(param->connecionIndex, param->value, param->length);
     return (KE_MSG_CONSUMED);
 }
@@ -109,6 +113,7 @@ __STATIC int send_data_via_write_command_handler(ke_msg_id_t const msgid,
                                       ke_task_id_t const dest_id,
                                       ke_task_id_t const src_id)
 {
+    TRACE(1, "   [%s]   TASK", __func__);
     // TODO: update to use new API
     /*
     datapathps_env_t *datapathps_env = PRF_ENV_GET(DATAPATHPS, datapathps);
@@ -126,6 +131,7 @@ __STATIC int send_data_via_write_request_handler(ke_msg_id_t const msgid,
                                       ke_task_id_t const dest_id,
                                       ke_task_id_t const src_id)
 {
+    TRACE(1, "   [%s]   TASK", __func__);
     // TODO: update to use new API
     /*
     datapathps_env_t *datapathps_env = PRF_ENV_GET(DATAPATHPS, datapathps);
@@ -143,6 +149,7 @@ __STATIC int control_notification_handler(ke_msg_id_t const msgid,
                                       ke_task_id_t const dest_id,
                                       ke_task_id_t const src_id)
 {
+    TRACE(1, "   [%s]   TASK", __func__);
     // TODO: update to use new API
     /*
     datapathps_env_t *datapathps_env = PRF_ENV_GET(DATAPATHPS, datapathps);
