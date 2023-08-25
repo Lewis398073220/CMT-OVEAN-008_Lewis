@@ -201,6 +201,16 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
     uint8_t* pData = co_buf_data(p_buf);
     uint16_t dataLen = p_buf->data_len;
 
+#ifdef CMT_008_BLE_ENABLE
+
+    uint16_t i=0;
+    for(i=0; i<dataLen; i++)
+    {
+        TRACE(1,"BLE_data[%d] = 0x%x", i, pData[i]);
+    }
+
+#endif /*CMT_008_BLE_ENABLE*/
+
     if (tota_env != NULL)
     {
         // TX ccc
