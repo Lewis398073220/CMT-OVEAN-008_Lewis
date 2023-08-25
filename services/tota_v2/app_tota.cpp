@@ -459,6 +459,7 @@ static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen)
             return app_spp_tota_send_data(pdata, dataLen);
 #ifdef BLE_TOTA_ENABLED
         case APP_TOTA_VIA_NOTIFICATION:
+            TOTA_LOG_DBG(2 ,"[%s]   BLEconnectionIndex:[%d]",__func__, ble_tota_env.connectionIndex);
             return bes_ble_tota_send_notification(ble_tota_env.connectionIndex, pdata, dataLen);
 #endif
         default:

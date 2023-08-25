@@ -434,6 +434,7 @@ const struct prf_task_cbs* tota_prf_itf_get(void)
 
 bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_t* ptrData, uint32_t length)
 {
+    TRACE(1, "[%s]  conidx:[%d]", __func__, conidx);
     enum gatt_evt_type evtType = isNotification?GATT_NOTIFY:GATT_INDICATE;
 
     PRF_ENV_T(tota) *tota_env = PRF_ENV_GET(TOTA, tota);
@@ -452,7 +453,7 @@ bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_
 
         // Inform the GATT that notification must be sent
         uint16_t ret = gatt_srv_event_send(conidx, tota_env->srv_user_lid, dummy, evtType,
-                            tota_env->shdl + TOTA_IDX_VAL, p_buf);
+                            tota_env->shdl + TOTA_IDX1_VAL, p_buf);
 
         // Release the buffer
         co_buf_release(p_buf);
