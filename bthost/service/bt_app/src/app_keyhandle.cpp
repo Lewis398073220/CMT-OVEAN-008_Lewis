@@ -80,7 +80,8 @@ void bt_key_handle_mute_key(void)
     if (call_state == CALL_STATE_IDLE)
     {
         TRACE(1,"%s *********** siri *********",__func__);
-        bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
+        //bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
+        app_hfp_siri_voice(TRUE);
     }
     else
     {
