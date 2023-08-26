@@ -31,16 +31,6 @@
 #include "co_utils.h"
 #include "bluetooth_bt_api.h"
 
-//#include "app_tota.h"
-//#include "hal_aud.h"
-
-
-extern void app_datapath_server_send_data_via_notification(uint8_t* ptrData, uint32_t length);
-
-extern void app_datapath_server_send_data_via_indication(uint8_t* ptrData, uint32_t length);
-extern void app_datapath_server_send_data_via_write_command(uint8_t* ptrData, uint32_t length);
-extern void app_datapath_server_send_data_via_write_request(uint8_t* ptrData, uint32_t length);
-
 
 /*
  * TOTA CMD PROFILE ATTRIBUTES
@@ -115,14 +105,6 @@ __STATIC void tota_gatt_cb_att_read_get(uint8_t conidx, uint8_t user_lid, uint16
     TRACE(0, "%s conidx 0x%x", __func__, conidx);
     TRACE(1, "read hdl 0x%x shdl 0x%x", hdl, tota_env->shdl);
 
-    //extern bool app_tota_send(uint8_t * pdata, uint16_t dataLen, APP_TOTA_CMD_CODE_E opCode);
-
-    /*uint8_t ptrData[3]={6,7,8};
-    uint32_t length =3;
-
-    app_datapath_server_send_data_via_notification(ptrData, length);*/
-
-
     if (hdl == (tota_env->shdl + TOTA_IDX_NTF_CFG))
     {
         uint16_t notify_ccc = tota_env->ntfIndEnableFlag[conidx];
@@ -181,17 +163,6 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 {
     // Get the address of the environment
     PRF_ENV_T(tota) *tota_env = PRF_ENV_GET(TOTA, tota);
-
-    /*uint8_t ptrData[3]={0x77,0x88,0x99};
-    uint32_t length =3;
-
-    
-    app_datapath_server_send_data_via_notification(ptrData, length);*/
-    
-    //app_datapath_server_send_data_via_indication(ptrData, length);
-    //app_datapath_server_send_data_via_write_command(ptrData, length);
-    //app_datapath_server_send_data_via_write_request(ptrData, length);
-    
 
     uint8_t status = GAP_ERR_NO_ERROR;
 
@@ -463,7 +434,7 @@ bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_
 
         // Inform the GATT that notification must be sent
         uint16_t ret = gatt_srv_event_send(conidx, tota_env->srv_user_lid, dummy, evtType,
-                            tota_env->shdl + TOTA_IDX1_VAL, p_buf);
+                            tota_env->shdl + TOTA_IDX_VAL, p_buf);
 
         // Release the buffer
         co_buf_release(p_buf);

@@ -344,10 +344,6 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
         return;
     }
 
-    uint8_t ptrData[3]={0x17,0x18,0x19};
-    uint16_t length =3;
-    app_tota_send_via_datapath(ptrData, length);
-
 #ifdef CMT_008_SPP_TOTA_V2
     uint16_t i=0;
     for(i=0; i<len; i++)
@@ -447,7 +443,7 @@ void app_tota_ble_disconnected(void)
 
 static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen)
 {
-    //dataLen = app_tota_tx_pack(pdata, dataLen);  /* Disable by Jay */
+    dataLen = app_tota_tx_pack(pdata, dataLen);
     if (0 == dataLen)
     {
         return false;
