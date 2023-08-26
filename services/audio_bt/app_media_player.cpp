@@ -855,8 +855,9 @@ static void media_playAudio_forware_playing_request_to_peer_dev(AUD_ID_ENUM id)
 void media_PlayAudio(AUD_ID_ENUM id,uint8_t device_id)
 {
 #if defined(__USE_3_5JACK_CTR__)
-    if(app_apps_3p5jack_plugin_flag(1)){
-        //app_play_linein_onoff(0);
+    if(app_apps_3p5jack_plugin_flag(1))
+    {
+        app_play_linein_onoff(0);
     }
 #endif /*__USE_3_5JACK_CTR__*/
 
@@ -905,6 +906,15 @@ prompt_local:
 #if defined(IBRT)
     trigger_prompt_local(false);
 #endif
+#if defined(__USE_3_5JACK_CTR__)
+    if(app_apps_3p5jack_plugin_flag(1))
+    {
+        #define DelayMs(a)      hal_sys_timer_delay(MS_TO_TICKS(a))
+        DelayMs(2000);
+        app_play_linein_onoff(1);
+    }
+#endif /*__USE_3_5JACK_CTR__*/
+
 }
 
 static bool media_PlayAudio_standalone_handler(AUD_ID_ENUM id, uint8_t device_id, bool isLocalPlaying)
@@ -2522,7 +2532,19 @@ int app_play_audio_onoff(bool onoff, APP_AUDIO_STATUS* status)
         else
 #endif
         {
-            stream_cfg.vol = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+            /* Modified by Jay, fix when a2dp volune is max also can hear prompts sound. */
+            //stream_cfg.vol = MEDIA_VOLUME_LEVEL_WARNINGTONE; //disable by Jay
+            if(app_bt_audio_get_curr_playing_a2dp())
+            {
+                stream_cfg.vol = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+            }
+            else
+            {
+                extern int app_bt_stream_local_volume_get(void);
+                stream_cfg.vol = app_bt_stream_local_volume_get();
+                if(stream_cfg.vol < MEDIA_VOLUME_LEVEL_WARNINGTONE)
+                    stream_cfg.vol = MEDIA_VOLUME_LEVEL_WARNINGTONE;
+            }
         }
         stream_cfg.handler = app_play_sbc_more_data;
 

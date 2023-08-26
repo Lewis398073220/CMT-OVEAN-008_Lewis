@@ -330,6 +330,7 @@ static void tota_ble_init(void)
 
 #endif
 
+static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen);
 
 static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
 {
@@ -342,6 +343,10 @@ static void s_app_tota_rx(uint8_t * cmd_buf, uint16_t len)
         TOTA_LOG_DBG(0,"[%s] cmd_buf is null", __func__);
         return;
     }
+
+    uint8_t ptrData[3]={0x17,0x18,0x19};
+    uint16_t length =3;
+    app_tota_send_via_datapath(ptrData, length);
 
 #ifdef CMT_008_SPP_TOTA_V2
     uint16_t i=0;
@@ -442,7 +447,7 @@ void app_tota_ble_disconnected(void)
 
 static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen)
 {
-    dataLen = app_tota_tx_pack(pdata, dataLen);
+    //dataLen = app_tota_tx_pack(pdata, dataLen);  /* Disable by Jay */
     if (0 == dataLen)
     {
         return false;
@@ -453,7 +458,8 @@ static bool app_tota_send_via_datapath(uint8_t * pdata, uint16_t dataLen)
         case APP_TOTA_VIA_SPP:
             return app_spp_tota_send_data(pdata, dataLen);
 #ifdef BLE_TOTA_ENABLED
-j        case APP_TOTA_VIA_NOTIFICATION:
+        case APP_TOTA_VIA_NOTIFICATION:
+            TOTA_LOG_DBG(2 ,"[%s]   BLEconnectionIndex:[%d]",__func__, ble_tota_env.connectionIndex);
             return bes_ble_tota_send_notification(ble_tota_env.connectionIndex, pdata, dataLen);
 #endif
         default:

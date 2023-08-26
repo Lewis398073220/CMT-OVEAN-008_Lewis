@@ -237,16 +237,18 @@ void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
                 //if(app_bt_ibrt_has_mobile_link_connected())
                 {
                     LOG_I("disconnect BT [%s]",__func__);
-                    //app_disconnect_all_bt_connections();
-                    //LinkDisconnectDirectly(true);
 
                     /*disconnect bt*/
-                    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
-                    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+                    app_disconnect_all_bt_connections();
                 }
                 else
                 {
                     LOG_I("connect BT [%s]",__func__);
+
+                    /*disconnect bt*/
+                    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+                    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+
                     /*connect bt*/
                     app_ibrt_if_event_entry(APP_UI_EV_CASE_OPEN);
                     app_ibrt_if_event_entry(APP_UI_EV_UNDOCK);

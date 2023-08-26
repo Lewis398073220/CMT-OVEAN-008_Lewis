@@ -31,13 +31,29 @@
 #include "co_utils.h"
 #include "bluetooth_bt_api.h"
 
+//#include "app_tota.h"
+//#include "hal_aud.h"
+
+
+extern void app_datapath_server_send_data_via_notification(uint8_t* ptrData, uint32_t length);
+
+extern void app_datapath_server_send_data_via_indication(uint8_t* ptrData, uint32_t length);
+extern void app_datapath_server_send_data_via_write_command(uint8_t* ptrData, uint32_t length);
+extern void app_datapath_server_send_data_via_write_request(uint8_t* ptrData, uint32_t length);
+
 
 /*
  * TOTA CMD PROFILE ATTRIBUTES
  ****************************************************************************************
  */
+ #ifndef CMT_008_BLE_ENABLE
 #define tota_service_uuid_128_content              {0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86, 0x86 }
 #define tota_val_char_val_uuid_128_content          {0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97, 0x97 }    
+#else /*CMT_008_BLE_ENABLE*/
+#define tota_service_uuid_128_content       {0x43, 0x6F, 0x75, 0x6E, 0x74, 0x72, 0x79, 0x6D, 0x61, 0x74, 0x65, 0x00, 0x1E, 0x7C, 0x00, 0x00 }
+#define tota_val_char_val_uuid_128_content   {0x43, 0x6F, 0x75, 0x6E, 0x74, 0x72, 0x79, 0x6D, 0x61, 0x74, 0x65, 0x00, 0x1E, 0x7C, 0x00, 0x01 }
+#define tota_val_char1_val_uuid_128_content   {0x43, 0x6F, 0x75, 0x6E, 0x74, 0x72, 0x79, 0x6D, 0x61, 0x74, 0x65, 0x00, 0x1E, 0x7C, 0x00, 0x02 }
+#endif /*CMT_008_BLE_ENABLE*/
 
 #define GATT_DECL_PRIMARY_SERVICE        { 0x00, 0x28 }
 #define GATT_DECL_CHARACTERISTIC_UUID        { 0x03, 0x28 }
@@ -52,11 +68,22 @@ const struct gatt_att_desc tota_att_db[TOTA_IDX_NB] =
     [TOTA_IDX_SVC]     =   {GATT_DECL_PRIMARY_SERVICE, PROP(RD), 0},
     // TOTA Characteristic Declaration
     [TOTA_IDX_CHAR]    =  {GATT_DECL_CHARACTERISTIC_UUID, PROP(RD), 0},
+#ifndef CMT_008_BLE_ENABLE
     // TOTA service
     [TOTA_IDX_VAL]     =  {tota_val_char_val_uuid_128_content, PROP(WR) |PROP(WC) | PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
+#else /*CMT_008_BLE_ENABLE*/
+    [TOTA_IDX_VAL]     =  {tota_val_char_val_uuid_128_content, PROP(WR) | PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
+#endif /*CMT_008_BLE_ENABLE*/
     // TOTA Characteristic
     [TOTA_IDX_NTF_CFG]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD) | PROP(WR), 0},
-
+#ifdef CMT_008_BLE_ENABLE
+    // RX Characteristic Declaration
+    [TOTA_IDX1_CHAR]    =   {GATT_DECL_CHARACTERISTIC_UUID, PROP(RD), 0},
+    // RX Characteristic Value
+    [TOTA_IDX1_VAL]     =   {tota_val_char1_val_uuid_128_content, PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
+    // RX Characteristic - Characteristic User Description Descriptor
+    [TOTA_IDX1_NTF_CFG]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD), 0},
+#endif /*CMT_008_BLE_ENABLE*/
 };
 
 __STATIC void tota_gatt_cb_event_sent(uint8_t conidx, uint8_t user_lid, uint16_t dummy, uint16_t status)
@@ -87,6 +114,14 @@ __STATIC void tota_gatt_cb_att_read_get(uint8_t conidx, uint8_t user_lid, uint16
 
     TRACE(0, "%s conidx 0x%x", __func__, conidx);
     TRACE(1, "read hdl 0x%x shdl 0x%x", hdl, tota_env->shdl);
+
+    //extern bool app_tota_send(uint8_t * pdata, uint16_t dataLen, APP_TOTA_CMD_CODE_E opCode);
+
+    /*uint8_t ptrData[3]={6,7,8};
+    uint32_t length =3;
+
+    app_datapath_server_send_data_via_notification(ptrData, length);*/
+
 
     if (hdl == (tota_env->shdl + TOTA_IDX_NTF_CFG))
     {
@@ -147,6 +182,17 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
     // Get the address of the environment
     PRF_ENV_T(tota) *tota_env = PRF_ENV_GET(TOTA, tota);
 
+    /*uint8_t ptrData[3]={0x77,0x88,0x99};
+    uint32_t length =3;
+
+    
+    app_datapath_server_send_data_via_notification(ptrData, length);*/
+    
+    //app_datapath_server_send_data_via_indication(ptrData, length);
+    //app_datapath_server_send_data_via_write_command(ptrData, length);
+    //app_datapath_server_send_data_via_write_request(ptrData, length);
+    
+
     uint8_t status = GAP_ERR_NO_ERROR;
 
     TRACE(4, "%s buds_env 0x%x write handle %d shdl %d", 
@@ -154,6 +200,16 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 
     uint8_t* pData = co_buf_data(p_buf);
     uint16_t dataLen = p_buf->data_len;
+
+#ifdef CMT_008_BLE_ENABLE
+
+    uint16_t i=0;
+    for(i=0; i<dataLen; i++)
+    {
+        TRACE(1,"BLE_data[%d] = 0x%x", i, pData[i]);
+    }
+
+#endif /*CMT_008_BLE_ENABLE*/
 
     if (tota_env != NULL)
     {
@@ -388,6 +444,7 @@ const struct prf_task_cbs* tota_prf_itf_get(void)
 
 bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_t* ptrData, uint32_t length)
 {
+    TRACE(1, "[%s]  conidx:[%d]", __func__, conidx);
     enum gatt_evt_type evtType = isNotification?GATT_NOTIFY:GATT_INDICATE;
 
     PRF_ENV_T(tota) *tota_env = PRF_ENV_GET(TOTA, tota);
@@ -406,7 +463,7 @@ bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_
 
         // Inform the GATT that notification must be sent
         uint16_t ret = gatt_srv_event_send(conidx, tota_env->srv_user_lid, dummy, evtType,
-                            tota_env->shdl + TOTA_IDX_VAL, p_buf);
+                            tota_env->shdl + TOTA_IDX1_VAL, p_buf);
 
         // Release the buffer
         co_buf_release(p_buf);

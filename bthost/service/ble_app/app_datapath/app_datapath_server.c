@@ -159,6 +159,7 @@ void app_datapath_server_send_data_via_notification(uint8_t* ptrData, uint32_t l
                                                 TASK_APP,
                                                 ble_datapath_send_data_req_t,
                                                 length);
+    TRACE(2, " [%s]    connecionIndex:[%d]", __func__, app_datapath_server_env.connectionIndex);
     req->connecionIndex = app_datapath_server_env.connectionIndex;
     req->length = length;
     memcpy(req->value, ptrData, length);

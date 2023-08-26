@@ -1117,7 +1117,7 @@ void app_factory_reset(void)
 	LinkDisconnectDirectly(false);
 	osDelay(800);
 	
-    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0); //add by jay
+    media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
 
 #if 0
 	struct nvrecord_env_t *nvrecord_env;
@@ -1139,7 +1139,14 @@ void app_factory_reset(void)
     nv_record_rebuild(NV_REBUILD_ALL);
 	osDelay(500);
 
+    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+    osDelay(800);
+
     app_ibrt_if_enter_freeman_pairing();
+    osDelay(1000);
+    media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
+    app_anc_switch(APP_ANC_MODE1);
 
 	//app_bt_reconnect_idle_mode();
 //#ifdef  __IAG_BLE_INCLUDE__
@@ -1602,7 +1609,7 @@ int app_deinit(int deinit_case)
 #ifdef MEDIA_PLAYER_SUPPORT
         media_PlayAudio_standalone_locally(AUD_ID_POWER_OFF, 0);
 #endif
-        osDelay(1500); /* Modified by Jay, changed from 1000 to 1500. */
+        osDelay(2000); /* Modified by Jay, changed from 1000 to 2000. */
 #endif
         af_close();
 #if defined(__THIRDPARTY) && defined(__AI_VOICE__)

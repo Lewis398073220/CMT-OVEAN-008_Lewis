@@ -463,6 +463,7 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
             TRACE(1,"PDVOLT-->POWEROFF:%d", prams.volt);
             TRACE(0,"Low battery POWEROFF");
             media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0); //Add by Jay, play 'battery low' prompts.
+            osDelay(2000);
             osTimerStop(app_battery_timer);
             app_shutdown();
 #endif

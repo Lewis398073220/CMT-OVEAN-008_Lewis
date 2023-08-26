@@ -258,6 +258,7 @@ static void ota_ble_rx_handler_thread(void const *argument)
                 #ifdef BLE_TOTA_ENABLED
                 case BLE_RX_DATA_SELF_TOTA:
                 #if !defined(TOTA_v2) // enabled when TOTA v2 BLE is ready
+                    TRACE(1,"[%s] BLE_RX_DATA_SELF_TOTA -Jay",__func__);
                     app_tota_handle_received_data(tmpData, rx_event->len);
                 #endif
                     break;

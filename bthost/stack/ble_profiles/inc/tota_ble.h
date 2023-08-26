@@ -84,6 +84,12 @@ enum
     TOTA_IDX_VAL,
     TOTA_IDX_NTF_CFG,
 
+#ifdef CMT_008_BLE_ENABLE
+    TOTA_IDX1_CHAR,
+    TOTA_IDX1_VAL,
+    TOTA_IDX1_NTF_CFG,
+#endif /*CMT_008_BLE_ENABLE*/
+
     TOTA_IDX_NB,
 };
 

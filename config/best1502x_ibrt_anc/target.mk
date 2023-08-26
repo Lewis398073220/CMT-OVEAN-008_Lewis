@@ -106,6 +106,15 @@ ifeq ($(CMT_008_SPP_GET_FW),1)
 KBUILD_CPPFLAGS += -DCMT_008_SPP_GET_FW
 endif
 
+export CMT_008_BLE_ENABLE ?= 1
+ifeq ($(CMT_008_BLE_ENABLE),1)
+KBUILD_CPPFLAGS += -DCMT_008_BLE_ENABLE
+endif
+
+export BLE_TOTA_ENABLED  ?= 1
+ifeq ($(BLE_TOTA_ENABLED),1)
+KBUILD_CPPFLAGS += -DBLE_TOTA_ENABLED
+endif
 
 #### Add by Jay, end. #####
 
