@@ -59,5 +59,11 @@ bool custom_tota_ble_send_notification(uint16_t handle, uint8_t* ptrData, uint32
     return custom_tota_ble_send_ind_ntf_generic(true, false, handle, ptrData, length);
 }
 
+// TODO: Jay
+void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length)
+{
+    custom_tota_ble_send_notification(TOTA_IDX_VAL, ptrData, length);
+    custom_tota_ble_send_notification(TOTA_IDX1_VAL, ptrData, length);
+}
 
 #endif /* CMT_008_BLE_ENABLE */

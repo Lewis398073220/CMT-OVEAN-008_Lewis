@@ -48,32 +48,48 @@
 #define GATT_DECL_PRIMARY_SERVICE        { 0x00, 0x28 }
 #define GATT_DECL_CHARACTERISTIC_UUID        { 0x03, 0x28 }
 #define GATT_DESC_CLIENT_CHAR_CFG_UUID        { 0x02, 0x29 }
+#ifdef CMT_008_BLE_ENABLE
+#define GATT_DESC_CHAR_CUSTOM_DESCRIPTION_UUID { 0x01, 0x29 }
+#endif /*CMT_008_BLE_ENABLE*/
 
 static const uint8_t TOTA_SERVICE_UUID_128[GATT_UUID_128_LEN]    = tota_service_uuid_128_content;  
 
 /// Full OTA SERVER Database Description - Used to add attributes into the database
 const struct gatt_att_desc tota_att_db[TOTA_IDX_NB] =
 {
+#ifdef CMT_008_BLE_ENABLE
+
     // TOTA Service Declaration
     [TOTA_IDX_SVC]     =   {GATT_DECL_PRIMARY_SERVICE, PROP(RD), 0},
     // TOTA Characteristic Declaration
     [TOTA_IDX_CHAR]    =  {GATT_DECL_CHARACTERISTIC_UUID, PROP(RD), 0},
-#ifndef CMT_008_BLE_ENABLE
     // TOTA service
-    [TOTA_IDX_VAL]     =  {tota_val_char_val_uuid_128_content, PROP(WR) |PROP(WC) | PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
-#else /*CMT_008_BLE_ENABLE*/
     [TOTA_IDX_VAL]     =  {tota_val_char_val_uuid_128_content, PROP(WR) | PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
-#endif /*CMT_008_BLE_ENABLE*/
     // TOTA Characteristic
     [TOTA_IDX_NTF_CFG]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD) | PROP(WR), 0},
-#ifdef CMT_008_BLE_ENABLE
+    // TX Characteristic - Characteristic User Description Descriptor
+    [TOTA_IDX_DESC]    =   {GATT_DESC_CHAR_CUSTOM_DESCRIPTION_UUID, PROP(RD), 32},
+
     // RX Characteristic Declaration
     [TOTA_IDX1_CHAR]    =   {GATT_DECL_CHARACTERISTIC_UUID, PROP(RD), 0},
     // RX Characteristic Value
     [TOTA_IDX1_VAL]     =   {tota_val_char1_val_uuid_128_content, PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
     // RX Characteristic - Characteristic User Description Descriptor
-    [TOTA_IDX1_NTF_CFG]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD), 0},
+    [TOTA_IDX1_DESC]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD), 32},
+
+#else /*CMT_008_BLE_ENABLE*/
+
+    // TOTA Service Declaration
+    [TOTA_IDX_SVC]     =   {GATT_DECL_PRIMARY_SERVICE, PROP(RD), 0},
+    // TOTA Characteristic Declaration
+    [TOTA_IDX_CHAR]    =  {GATT_DECL_CHARACTERISTIC_UUID, PROP(RD), 0},
+    // TOTA service
+    [TOTA_IDX_VAL]     =  {tota_val_char_val_uuid_128_content, PROP(WR) |PROP(WC) | PROP(N) | ATT_UUID(128), TOTA_MAX_LEN},
+    // TOTA Characteristic
+    [TOTA_IDX_NTF_CFG]    =   {GATT_DESC_CLIENT_CHAR_CFG_UUID, PROP(RD) | PROP(WR), 0},
+
 #endif /*CMT_008_BLE_ENABLE*/
+
 };
 
 __STATIC void tota_gatt_cb_event_sent(uint8_t conidx, uint8_t user_lid, uint16_t dummy, uint16_t status)
@@ -174,11 +190,14 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 
 #ifdef CMT_008_BLE_ENABLE
 
+    #include "tota_ble_custom.h"
+            
     uint16_t i=0;
     for(i=0; i<dataLen; i++)
     {
-        TRACE(1,"BLE_data[%d] = 0x%x", i, pData[i]);
+        TRACE(2,"BLE_data[%d] = 0x%x", i, pData[i]);
     }
+    custom_tota_ble_data_handle(pData, (uint32_t) dataLen);
 
 #endif /*CMT_008_BLE_ENABLE*/
 

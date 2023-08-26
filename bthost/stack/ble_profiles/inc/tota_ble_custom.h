@@ -11,6 +11,7 @@
 
 
 bool custom_tota_ble_send_notification(uint16_t handle, uint8_t* ptrData, uint32_t length);
+void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length);
 
 
 #endif /* CMT_008_BLE_ENABLE */
