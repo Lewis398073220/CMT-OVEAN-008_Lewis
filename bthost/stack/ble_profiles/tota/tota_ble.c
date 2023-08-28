@@ -201,11 +201,15 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 
 #endif /*CMT_008_BLE_ENABLE*/
 
+    TRACE(1,"tota_env->shdl + TOTA_IDX_SVC:[%d], TOTA_IDX_SVC:[%d]", tota_env->shdl + TOTA_IDX_SVC, TOTA_IDX_SVC);
+
     if (tota_env != NULL)
     {
         // TX ccc
         if (hdl == (tota_env->shdl + TOTA_IDX_NTF_CFG))
         {
+            TRACE(1,"tota_env->shdl + TOTA_IDX_NTF_CFG:[%d]", tota_env->shdl + TOTA_IDX_NTF_CFG);
+
             uint16_t value = 0x0000;
             
             //Extract value before check
@@ -220,7 +224,16 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
             {
                 status = PRF_APP_ERROR;
             }
-            
+
+#ifdef CMT_008_BLE_ENABLE
+
+            //TODO: Notify flag need by used. Jay
+            uint16_t notify_flag;
+            notify_flag = pData[0];
+            TRACE(1,"TOTA_IDX_NTF_CFG Notify:[%d]", notify_flag);
+
+#endif /*CMT_008_BLE_ENABLE*/
+
             // Inform GATT about handling
             gatt_srv_att_val_set_cfm(conidx, user_lid, token, status);
 
@@ -246,7 +259,9 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
             }
         }
         else if (hdl == (tota_env->shdl + TOTA_IDX_VAL))
-        {        
+        {
+            TRACE(1,"tota_env->shdl + TOTA_IDX_VAL:[%d]", tota_env->shdl + TOTA_IDX_VAL);
+
             tota_env->rx_token = token;
     
             //inform APP of data
@@ -263,8 +278,28 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 
             gatt_srv_att_val_set_cfm(conidx, user_lid, token, status);
         }
+
+#ifdef CMT_008_BLE_ENABLE
+        else if (hdl == (tota_env->shdl + TOTA_IDX1_VAL))
+        {
+            TRACE(1,"tota_env->shdl + TOTA_IDX_VAL:[%d]", tota_env->shdl + TOTA_IDX_VAL);
+            gatt_srv_att_val_set_cfm(conidx, user_lid, token, status);
+        }
+        else if (hdl == (tota_env->shdl + TOTA_IDX1_DESC))
+        {
+            TRACE(1,"tota_env->shdl + TOTA_IDX1_DESC:[%d]", tota_env->shdl + TOTA_IDX1_DESC);
+
+            //TODO: Notify flag need by used. Jay
+            uint16_t notify_flag;
+            notify_flag = pData[0];
+            TRACE(1,"TOTA_IDX1_DESC Notify:[%d]", notify_flag);
+            gatt_srv_att_val_set_cfm(conidx, user_lid, token, status);
+        }
+#endif /*CMT_008_BLE_ENABLE*/
+
         else
         {
+            TRACE(0,"*************[else]**************");
             // Inform GATT about handling
             gatt_srv_att_val_set_cfm(conidx, user_lid, token, PRF_APP_ERROR);
         }
