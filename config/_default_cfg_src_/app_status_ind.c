@@ -145,7 +145,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             break;
         case APP_STATUS_INDICATION_INITIAL:
             break;
-        case APP_STATUS_INDICATION_PAGESCAN:  //power_on
+        case APP_STATUS_INDICATION_PAGESCAN:  //power_on white led blink
             cfg0.part[0].level = 1;
             cfg0.part[0].time = (300);
             cfg0.part[1].level = 0;
