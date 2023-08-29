@@ -254,6 +254,189 @@ static bool ble_clear_actv_action(BLE_ACTV_ACTION_E actv_action, uint8_t actv_id
 }
 
 // ble advertisement used functions
+
+#ifdef CMT_008_BLE_DISABLE //CMT_008_BLE_ENABLE
+
+static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
+{
+    #include "app_bt.h"
+    #include "app_battery.h"
+
+    uint8_t adv_data[28] = {0};
+
+    adv_data[0] = 0x1B; /*Payload length [27]*/
+    adv_data[1] = 0xFF; /*BLE Type Value [0xFF]*/
+
+    adv_data[2] = 0x1C; /* TODO: ?, Jay add */
+    adv_data[3] = 0x52; /* TODO: ?, Jay add */
+
+    adv_data[4] = 0x41; /* TODO: ?, Jay add */
+    adv_data[5] = 0xD1; /* TODO: ?, Jay add */
+
+    adv_data[6] = 0x00; /* TODO: ?, Jay add */
+
+    adv_data[7] = 0x02; /* TODO: ?, Jay add */
+
+    adv_data[8] = app_bt_get_current_access_mode(); /*Classic bluetooth state*/    
+    adv_data[9] = app_battery_current_level()*10; /*Master battery level*/    
+    adv_data[10] = 0; /*Secondary battery level*/    
+    adv_data[11] = 0; /*Charger case battery level*/
+
+    bt_bdaddr_t* remote_addr = app_bt_get_remote_device_address(1);
+    LOG_I(" [%d] [%d] [%d] [%d] [%d] [%d] ", remote_addr->address[0], remote_addr->address[1],\
+                                             remote_addr->address[2], remote_addr->address[3],\
+                                             remote_addr->address[4], remote_addr->address[5]);
+
+    adv_data[12] = 0x00; /* TODO: Check the remote device are correct, Jay add */
+    adv_data[13] = 0x00;
+    adv_data[14] = 0x00;
+
+    memcpy(&adv_data[15], bt_global_addr/*bt_get_ble_local_address()*/, BTIF_BD_ADDR_SIZE); /*Byte15 - Byte20 of local address*/
+
+    adv_data[21] = 0; /* TODO: ?, Jay add */
+
+    memset(&adv_data[22], 0, BTIF_BD_ADDR_SIZE); /*Byte22 - Byte27 of tws secondary address*/
+
+    //memset(&adv_data[28], 0, 3); /*Byte28 - Byte31 of reserved*/
+
+    uint8_t checksum = adv_data[7];
+    for (uint8_t i=7; i < 15; i++)
+    {
+        checksum += adv_data[i];
+    }
+    adv_data[6] = checksum;
+
+    uint8_t i = 0;
+    uint32_t adv_user_interval = BLE_ADV_INVALID_INTERVAL;
+    uint8_t empty_addr[BTIF_BD_ADDR_SIZE] = {0, 0, 0, 0, 0, 0};
+    BLE_ADV_FILL_PARAM_T *p_ble_param = app_ble_param_get_ctx();
+
+    // reset adv param info
+    memset(&bleModeEnv.advParamInfo, 0, sizeof(bleModeEnv.advParamInfo));
+    bleModeEnv.adv_user_enable[actv_user] = 0;
+    bleModeEnv.advParamInfo.advType = bleModeEnv.advPendingType;
+    bleModeEnv.advParamInfo.advMode = bleModeEnv.advertisingPendingMode;
+    bleModeEnv.advParamInfo.discMode = bleModeEnv.advPendingDiscmode;
+    bleModeEnv.advParamInfo.advTxPwr = app_ble_param_get_adv_tx_power_level(actv_user);
+#ifdef IS_BLE_FLAGS_ADV_DATA_CONFIGURED_BY_APP_LAYER
+J    bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer = true;
+#else
+    bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer = false;
+#endif
+    if (memcmp(bleModeEnv.advPendingLocalAddr[actv_user], empty_addr, BTIF_BD_ADDR_SIZE))
+    {
+        memcpy(bleModeEnv.advParamInfo.localAddr, bleModeEnv.advPendingLocalAddr[actv_user], BTIF_BD_ADDR_SIZE);
+    }
+    else
+    {
+#ifdef CUSTOMER_DEFINE_ADV_DATA
+J        memcpy(bleModeEnv.advParamInfo.localAddr, bleModeEnv.advPendingLocalAddr[actv_user], BTIF_BD_ADDR_SIZE);
+#else
+        memcpy(bleModeEnv.advParamInfo.localAddr, bt_get_ble_local_address(), BTIF_BD_ADDR_SIZE);
+#endif
+    }
+
+    if (app_ble_is_white_list_enable())
+    {LOG_I(   "[%s]"  , __func__);
+        if (bleModeEnv.bleEnv->numberOfDevicesAddedToResolvingList != 0)
+        {
+            LOG_I("white list mode");
+            bleModeEnv.advParamInfo.filter_pol = ADV_ALLOW_SCAN_WLST_CON_WLST;
+        }
+        else
+        {
+            LOG_I("Resolving list is empty, white list mode is disabled");
+            bleModeEnv.advParamInfo.filter_pol = ADV_ALLOW_SCAN_ANY_CON_ANY;
+        }
+    }
+    else
+    {
+        bleModeEnv.advParamInfo.filter_pol = ADV_ALLOW_SCAN_ANY_CON_ANY;
+    }
+
+    for (i = USER_INUSE; i < BLE_ADV_USER_NUM; i++)
+    {
+        bleModeEnv.advParamInfo.advUserInterval[i] = BLE_ADV_INVALID_INTERVAL;
+    }
+
+    // scenarios interval
+    bleModeEnv.advParamInfo.advInterval = app_ble_param_get_adv_interval(actv_user);
+
+#ifdef IS_BLE_FLAGS_ADV_DATA_CONFIGURED_BY_APP_LAYER
+J    bleModeEnv.advParamInfo.advData[0] = GAPM_ADV_AD_TYPE_FLAGS_INFO_LENGTH;
+    bleModeEnv.advParamInfo.advData[1] = GAP_AD_TYPE_FLAGS;
+    bleModeEnv.advParamInfo.advData[2] = GAP_LE_GEN_DISCOVERABLE_FLG_BIT | GAP_SIMUL_BR_EDR_LE_CONTROLLER_BIT;
+    bleModeEnv.advParamInfo.advDataLen += GAPM_ADV_AD_TYPE_FLAGS_LENGTH;
+#endif
+
+    // fill adv user data
+    for (i = USER_INUSE; i < BLE_ADV_USER_NUM; i++)
+    {
+        BLE_ADV_USER_E user = p_ble_param[actv_user].adv_user[i];
+        if (USER_INUSE != user)
+        {
+            if (bleModeEnv.bleDataFillFunc[user])
+            {
+                bleModeEnv.bleDataFillFunc[user]((void *)&bleModeEnv.advParamInfo);
+
+                // check if the adv/scan_rsp data length is legal
+                if (bleModeEnv.advParamInfo.advMode == ADV_MODE_LEGACY)
+                {
+                    // check if the adv/scan_rsp data length is legal
+                    if (bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer)
+                    {
+                        ASSERT(BLE_ADV_DATA_WITHOUT_FLAG_LEN >= bleModeEnv.advParamInfo.advDataLen, "[BLE][ADV]adv data exceed");
+                    }
+                    else
+                    {
+                        ASSERT(BLE_ADV_DATA_WITH_FLAG_LEN >= bleModeEnv.advParamInfo.advDataLen, "[BLE][ADV]adv data exceed");
+                    }
+                    ASSERT(SCAN_RSP_DATA_LEN >= bleModeEnv.advParamInfo.scanRspDataLen, "[BLE][ADV]scan response data exceed");
+                }
+            }
+        }
+    }
+
+    // adv param judge
+    if (BLE_ADV_INVALID_INTERVAL == bleModeEnv.advParamInfo.advInterval)
+    {
+        // adv user interval
+        for (i = USER_INUSE; i < BLE_ADV_USER_NUM; i++)
+        {
+            // adv interval
+            adv_user_interval = bleModeEnv.advParamInfo.advUserInterval[i];
+            if ((BLE_ADV_INVALID_INTERVAL != adv_user_interval) &&
+                ((BLE_ADV_INVALID_INTERVAL == bleModeEnv.advParamInfo.advInterval) ||
+                 (adv_user_interval < bleModeEnv.advParamInfo.advInterval)))
+            {
+                bleModeEnv.advParamInfo.advInterval = adv_user_interval;
+            }
+        }
+    }
+
+    // adv interval judge
+    if (BLE_ADV_INVALID_INTERVAL == bleModeEnv.advParamInfo.advInterval)
+    {
+        bleModeEnv.advParamInfo.advInterval = BLE_ADVERTISING_INTERVAL;
+    }
+
+    // adv type judge
+    // connectable adv is not allowed if max connection reaches
+    if (app_is_arrive_at_max_ble_connections() &&
+        (ADV_TYPE_NON_CONN_SCAN != bleModeEnv.advParamInfo.advType) &&
+        (ADV_TYPE_NON_CONN_NON_SCAN != bleModeEnv.advParamInfo.advType))
+    {
+        LOG_W("will change adv type to none-connectable because max ble connection reaches");
+        bleModeEnv.advParamInfo.advType = ADV_TYPE_NON_CONN_SCAN;
+    }
+
+    memcpy(bleModeEnv.advParamInfo.advData, adv_data, sizeof(adv_data));
+
+    bleModeEnv.advParamInfo.advDataLen = sizeof(adv_data);
+}
+
+#else /*CMT_008_BLE_ENABLE*/
+
 static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
 {
     uint8_t i = 0;
@@ -271,7 +454,7 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     bleModeEnv.advParamInfo.discMode = bleModeEnv.advPendingDiscmode;
     bleModeEnv.advParamInfo.advTxPwr = app_ble_param_get_adv_tx_power_level(actv_user);
 #ifdef IS_BLE_FLAGS_ADV_DATA_CONFIGURED_BY_APP_LAYER
-    bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer = true;
+J    bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer = true;
 #else
     bleModeEnv.advParamInfo.isBleFlagsAdvDataConfiguredByAppLayer = false;
 #endif
@@ -282,7 +465,7 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     else
     {
 #ifdef CUSTOMER_DEFINE_ADV_DATA
-        memcpy(bleModeEnv.advParamInfo.localAddr, bleModeEnv.advPendingLocalAddr[actv_user], BTIF_BD_ADDR_SIZE);
+J        memcpy(bleModeEnv.advParamInfo.localAddr, bleModeEnv.advPendingLocalAddr[actv_user], BTIF_BD_ADDR_SIZE);
 #else
         memcpy(bleModeEnv.advParamInfo.localAddr, bt_get_ble_local_address(), BTIF_BD_ADDR_SIZE);
 #endif
@@ -315,7 +498,7 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     bleModeEnv.advParamInfo.advInterval = app_ble_param_get_adv_interval(actv_user);
 
 #ifdef IS_BLE_FLAGS_ADV_DATA_CONFIGURED_BY_APP_LAYER
-    bleModeEnv.advParamInfo.advData[0] = GAPM_ADV_AD_TYPE_FLAGS_INFO_LENGTH;
+J    bleModeEnv.advParamInfo.advData[0] = GAPM_ADV_AD_TYPE_FLAGS_INFO_LENGTH;
     bleModeEnv.advParamInfo.advData[1] = GAP_AD_TYPE_FLAGS;
     bleModeEnv.advParamInfo.advData[2] = GAP_LE_GEN_DISCOVERABLE_FLG_BIT | GAP_SIMUL_BR_EDR_LE_CONTROLLER_BIT;
     bleModeEnv.advParamInfo.advDataLen += GAPM_ADV_AD_TYPE_FLAGS_LENGTH;
@@ -421,6 +604,8 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     }
 #endif
 }
+
+#endif /*CMT_008_BLE_ENABLE*/
 
 /*---------------------------------------------------------------------------
  *            ble_adv_is_allowed

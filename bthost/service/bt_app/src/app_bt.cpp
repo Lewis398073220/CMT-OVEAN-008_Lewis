@@ -1814,6 +1814,13 @@ btif_accessible_mode_t app_bt_get_current_access_mode(void)
 {
     return g_bt_access_mode;
 }
+/*Add by jay*/
+#else
+btif_accessible_mode_t app_bt_get_current_access_mode(void)
+{
+    return g_bt_access_mode;
+}
+/*Add by jay*/
 #endif
 
 static void app_bt_precheck_before_starting_connecting(uint8_t isBtConnected);

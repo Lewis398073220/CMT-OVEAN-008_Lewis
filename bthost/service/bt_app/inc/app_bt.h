@@ -343,6 +343,10 @@ void app_bt_set_connecting_profiles_state(uint8_t devId);
 
 #if defined(__INTERCONNECTION__)
 btif_accessible_mode_t app_bt_get_current_access_mode(void);
+/*Add by jay*/
+#else
+btif_accessible_mode_t app_bt_get_current_access_mode(void);
+/*Add by jay*/
 #endif
 
 bool app_bt_is_hfp_audio_on(void);
