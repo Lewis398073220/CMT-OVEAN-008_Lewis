@@ -255,7 +255,7 @@ static bool ble_clear_actv_action(BLE_ACTV_ACTION_E actv_action, uint8_t actv_id
 
 // ble advertisement used functions
 
-#ifdef CMT_008_BLE_DISABLE //CMT_008_BLE_ENABLE
+#ifdef CMT_008_BLE_ENABLE
 
 static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
 {
@@ -265,7 +265,7 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     uint8_t adv_data[28] = {0};
 
     adv_data[0] = 0x1B; /*Payload length [27]*/
-    adv_data[1] = 0xFF; /*BLE Type Value [0xFF]*/
+    adv_data[1] = 0xFF; /*BLE Type Value [0xFF] is 'Manufacturer Specific Data'*/
 
     adv_data[2] = 0x1C; /* TODO: ?, Jay add */
     adv_data[3] = 0x52; /* TODO: ?, Jay add */
@@ -282,22 +282,16 @@ static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
     adv_data[10] = 0; /*Secondary battery level*/    
     adv_data[11] = 0; /*Charger case battery level*/
 
-    bt_bdaddr_t* remote_addr = app_bt_get_remote_device_address(1);
-    LOG_I(" [%d] [%d] [%d] [%d] [%d] [%d] ", remote_addr->address[0], remote_addr->address[1],\
-                                             remote_addr->address[2], remote_addr->address[3],\
-                                             remote_addr->address[4], remote_addr->address[5]);
-
     adv_data[12] = 0x00; /* TODO: Check the remote device are correct, Jay add */
     adv_data[13] = 0x00;
     adv_data[14] = 0x00;
 
-    memcpy(&adv_data[15], bt_global_addr/*bt_get_ble_local_address()*/, BTIF_BD_ADDR_SIZE); /*Byte15 - Byte20 of local address*/
+    memcpy(&adv_data[15], bt_global_addr, BTIF_BD_ADDR_SIZE); /*Byte15 - Byte20 of local address*/
 
     adv_data[21] = 0; /* TODO: ?, Jay add */
 
     memset(&adv_data[22], 0, BTIF_BD_ADDR_SIZE); /*Byte22 - Byte27 of tws secondary address*/
 
-    //memset(&adv_data[28], 0, 3); /*Byte28 - Byte31 of reserved*/
 
     uint8_t checksum = adv_data[7];
     for (uint8_t i=7; i < 15; i++)
@@ -337,7 +331,7 @@ J        memcpy(bleModeEnv.advParamInfo.localAddr, bleModeEnv.advPendingLocalAdd
     }
 
     if (app_ble_is_white_list_enable())
-    {LOG_I(   "[%s]"  , __func__);
+    {
         if (bleModeEnv.bleEnv->numberOfDevicesAddedToResolvingList != 0)
         {
             LOG_I("white list mode");
