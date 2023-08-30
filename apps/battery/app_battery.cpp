@@ -63,7 +63,7 @@ extern "C" bool app_usbaudio_mode_on(void);
 
 #ifndef APP_BATTERY_MIN_MV
 #ifdef CMT_008_BATTERY_LOW
-#define APP_BATTERY_MIN_MV (3320) //Modifed by Jay, changed from 3200 to 3320. 
+#define APP_BATTERY_MIN_MV (3400) //Modifed by Jay, changed from 3200 to 3400. 
 #else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_MIN_MV (3200)
 #endif /*CMT_008_BATTERY_LOW*/
@@ -266,7 +266,7 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
                 TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_OVERVOLT, meanBattVolt);
             }
-            /* BattVolt > 3200mV && BattVolt < 3320mV, now is low battery state. */
+            /* BattVolt > 3200mV && BattVolt < 3400mV, now is low battery state. */
             else if((meanBattVolt>app_battery_measure.pdvolt) && (meanBattVolt<app_battery_measure.lowvolt))
             {
                 TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
@@ -463,7 +463,7 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
             TRACE(1,"PDVOLT-->POWEROFF:%d", prams.volt);
             TRACE(0,"Low battery POWEROFF");
             media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0); //Add by Jay, play 'battery low' prompts.
-            osDelay(2000);
+            osDelay(3000);
             osTimerStop(app_battery_timer);
             app_shutdown();
 #endif

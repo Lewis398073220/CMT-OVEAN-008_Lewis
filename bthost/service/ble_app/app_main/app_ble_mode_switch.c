@@ -257,11 +257,11 @@ static bool ble_clear_actv_action(BLE_ACTV_ACTION_E actv_action, uint8_t actv_id
 
 #ifdef CMT_008_BLE_ENABLE
 
+#include "app_bt.h"
+#include "app_battery.h"
+
 static void ble_adv_config_param(BLE_ADV_ACTIVITY_USER_E actv_user)
 {
-    #include "app_bt.h"
-    #include "app_battery.h"
-
     uint8_t adv_data[28] = {0};
 
     adv_data[0] = 0x1B; /*Payload length [27]*/

@@ -31,6 +31,9 @@
 #include "co_utils.h"
 #include "bluetooth_bt_api.h"
 
+#ifdef CMT_008_BLE_ENABLE
+#include "tota_ble_custom.h"
+#endif
 
 /*
  * TOTA CMD PROFILE ATTRIBUTES
@@ -189,19 +192,14 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
     uint16_t dataLen = p_buf->data_len;
 
 #ifdef CMT_008_BLE_ENABLE
-
-    #include "tota_ble_custom.h"
             
     uint16_t i=0;
     for(i=0; i<dataLen; i++)
     {
         TRACE(2,"BLE_data[%d] = 0x%x", i, pData[i]);
     }
-    custom_tota_ble_data_handle(pData, (uint32_t) dataLen);
 
 #endif /*CMT_008_BLE_ENABLE*/
-
-    TRACE(1,"tota_env->shdl + TOTA_IDX_SVC:[%d], TOTA_IDX_SVC:[%d]", tota_env->shdl + TOTA_IDX_SVC, TOTA_IDX_SVC);
 
     if (tota_env != NULL)
     {
@@ -261,6 +259,12 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
         else if (hdl == (tota_env->shdl + TOTA_IDX_VAL))
         {
             TRACE(1,"tota_env->shdl + TOTA_IDX_VAL:[%d]", tota_env->shdl + TOTA_IDX_VAL);
+#ifdef CMT_008_BLE_ENABLE
+
+            /* Receive characteristic data */
+            custom_tota_ble_data_handle(pData, (uint32_t) dataLen);
+
+#endif /*CMT_008_BLE_ENABLE*/
 
             tota_env->rx_token = token;
     
@@ -299,7 +303,7 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 
         else
         {
-            TRACE(0,"*************[else]**************");
+            TRACE(1,"****[%s][else]****", __func__);
             // Inform GATT about handling
             gatt_srv_att_val_set_cfm(conidx, user_lid, token, PRF_APP_ERROR);
         }
