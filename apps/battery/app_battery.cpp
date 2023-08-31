@@ -75,7 +75,7 @@ extern "C" bool app_usbaudio_mode_on(void);
 
 #ifndef APP_BATTERY_PD_MV
 #ifdef CMT_008_BATTERY_LOW
-#define APP_BATTERY_PD_MV   (3200) //Modifed by Jay, changed from 3100 to 3200. 
+#define APP_BATTERY_PD_MV   (3350) //Modifed by Jay, changed from 3100 to 3350. 
 #else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_PD_MV   (3100)
 #endif /*CMT_008_BATTERY_LOW*/
@@ -267,13 +267,13 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
                 TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_OVERVOLT, meanBattVolt);
             }
-            /* BattVolt > 3200mV && BattVolt < 3400mV, now is low battery state. */
+            /* BattVolt > 3350mV && BattVolt < 3400mV, now is low battery state. */
             else if((meanBattVolt>app_battery_measure.pdvolt) && (meanBattVolt<app_battery_measure.lowvolt))
             {
                 TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_UNDERVOLT, meanBattVolt);
             }
-            else if(meanBattVolt<=app_battery_measure.pdvolt) //lenss than or equal to 3200mV.
+            else if(meanBattVolt<=app_battery_measure.pdvolt) //lenss than or equal to 3350mV.
             {
                 TRACE(2, "%s   PD   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_PDVOLT, meanBattVolt);
