@@ -221,11 +221,13 @@ extern const struct CODEC_DAC_VOL_T codec_dac_hfp_vol[TGT_VOLUME_LEVEL_QTY];
 
 #define CFG_AUD_EQ_IIR_NUM_BANDS (4)
 
+#ifndef CMT_008_BATTERY_LOW
 //battery info
 #define APP_BATTERY_MIN_MV (3200)
 #define APP_BATTERY_PD_MV   (3100)
 
 #define APP_BATTERY_MAX_MV (4200)
+#endif /*CMT_008_BATTERY_LOW*/
 
 #ifdef CMT_008_NTC_DETECT
 //extern const struct HAL_IOMUX_PIN_FUNCTION_MAP Cfg_ntc_volt_ctr;
