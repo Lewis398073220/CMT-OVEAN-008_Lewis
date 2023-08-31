@@ -117,8 +117,10 @@ typedef enum
 
 
 
-bool custom_tota_ble_send_notification(uint16_t handle, uint8_t* ptrData, uint32_t length);
+
 void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length);
+bool custon_tota_ble_send_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len);
+bool custon_tota_ble_send_notify_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len);
 
 
 #endif /* CMT_008_BLE_ENABLE */
