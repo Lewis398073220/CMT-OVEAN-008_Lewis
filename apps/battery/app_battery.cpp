@@ -261,6 +261,7 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
         meanBattVolt /= APP_BATTERY_STABLE_COUNT;
         if (app_battery_measure.cb)
         {
+            TRACE(3, "highvolt[%d], lowvolt[%d], pdvolt[%d],", app_battery_measure.highvolt, app_battery_measure.lowvolt, app_battery_measure.pdvolt);
             if (meanBattVolt>app_battery_measure.highvolt) //more than 4200mV.
             {
                 TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
@@ -272,7 +273,7 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
                 TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_UNDERVOLT, meanBattVolt);
             }
-            else if(meanBattVolt<app_battery_measure.pdvolt) //lenss than 3200mV.
+            else if(meanBattVolt<=app_battery_measure.pdvolt) //lenss than or equal to 3200mV.
             {
                 TRACE(2, "%s   PD   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_PDVOLT, meanBattVolt);
@@ -463,7 +464,7 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
             TRACE(1,"PDVOLT-->POWEROFF:%d", prams.volt);
             TRACE(0,"Low battery POWEROFF");
             media_PlayAudio(AUD_ID_BT_BATTERY_LOW, 0); //Add by Jay, play 'battery low' prompts.
-            osDelay(3000);
+            osDelay(2000);
             osTimerStop(app_battery_timer);
             app_shutdown();
 #endif
