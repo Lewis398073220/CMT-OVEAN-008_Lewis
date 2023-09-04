@@ -154,7 +154,18 @@ subdir-ccflags-y += \
     -Iservices/bt_app/a2dp_codecs/include \
     -Iutils/encrypt \
     -Iservices/ota/bes_ota/inc \
-    -Iservices/ota
+    -Iservices/ota \
+    -Iapps/battery \
+    -Iservices/audio_bt \
+    -Iservices/nv_section/factory_section \
+    -Iservices/app_ibrt_v2/inc \
+    -Iservices/ibrt_core_v2/inc \
+    -Iservices/multimedia/audio/codec/sbc/inc \
+    -Iservices/audio_manager \
+    -Iservices/ibrt_middleware/inc \
+    -Iservices/ibrt_ui_v2/inc \
+    -Iservices/nv_section/userdata_section \
+    -Iapps/user
 
 ifeq ($(BES_OTA),1)
 ifeq ($(IBRT_OTA),1)

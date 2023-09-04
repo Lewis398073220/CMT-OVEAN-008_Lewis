@@ -69,7 +69,8 @@ ccflags-y := \
     -Iutils/aes_cmac \
     -Iservices/audio_manager \
     -Iservices/app_ibrt_v2/inc \
-    -Iapps/key
+    -Iapps/key \
+    -Iapps/user
 
 ifeq ($(SBC_REDUCE_SIZE),1)
 ccflags-y += \

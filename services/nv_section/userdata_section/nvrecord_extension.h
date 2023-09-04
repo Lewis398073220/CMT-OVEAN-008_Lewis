@@ -254,6 +254,13 @@ struct nvrecord_env_t {
     le_rx_nonsignaling_test_t le_rx_env;
     le_tx_nonsignaling_test_t le_tx_env;
     bt_nonsignaling_test_t bt_nonsignaling_env;
+
+#ifdef CMT_008_BLE_ENABLE
+
+    uint8_t custom_bt_name_len;
+    char custom_bt_name[27];     /* 27 = CLASSIC_BTNAME_LEN */
+
+#endif /*CMT_008_BLE_ENABLE*/
 };
 
 typedef struct btdevice_volume {

@@ -20,7 +20,8 @@
 #include "bt_sco_chain.h"
 #include "app_audio_control.h"
 #include "app_ibrt_if.h"
-
+#include "nvrecord_extension.h"
+#include "nvrecord_env.h"
 
 //#if (defined(__AMP_SWITCH_CTR__)&&defined(__USE_AMP_MUTE_CTR__))
 #include "btapp.h"
@@ -356,6 +357,47 @@ void apps_jack_event_process(void)
 	}
 }
 #endif
+
+static uint8_t user_set_bt_name_len = 0;
+static char user_set_bt_name[27]; /* 27 = CLASSIC_BTNAME_LEN */
+
+const char *user_custom_get_bt_name(void)
+{
+    return user_set_bt_name;
+}
+
+bool user_custom_get_bt_name_len(void)
+{
+    return user_set_bt_name_len;
+}
+
+void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
+{ 
+	struct nvrecord_env_t *nvrecord_env;
+	nv_record_env_get(&nvrecord_env);
+
+    user_set_bt_name_len = len;
+    memcpy(user_set_bt_name, data, len);
+
+	nvrecord_env->custom_bt_name_len = len;
+    memcpy(nvrecord_env->custom_bt_name, data, len);
+
+	nv_record_env_set(nvrecord_env);
+
+    nv_record_flash_flush();
+}
+
+void user_custom_nvrecord_data_get(void)
+{
+    TRACE(1, " [%s] ", __func__);
+	struct nvrecord_env_t *nvrecord_env;
+
+	nv_record_env_get(&nvrecord_env);
+
+    user_set_bt_name_len = nvrecord_env->custom_bt_name_len;
+
+    memcpy(user_set_bt_name, nvrecord_env->custom_bt_name, user_set_bt_name_len);
+}
 
 #if 0
 

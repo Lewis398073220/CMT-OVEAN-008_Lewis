@@ -31,6 +31,12 @@
 #include "factory_section.h"
 #include "heap_api.h"
 
+#ifdef CMT_008_BLE_ENABLE
+#include "tota_ble_custom.h"
+#include "app_user.h"
+#endif /*CMT_008_BLE_ENABLE*/
+
+
 #define nv_record_verbose_log
 
 #define nvrec_trace TRACE
@@ -971,7 +977,18 @@ bool nvrec_dev_localname_addr_init(dev_addr_name *dev)
         {
             memcpy((void *) dev->btd_addr,(void *)&p_devdata_cache[rev2_dev_bt_addr],BTIF_BD_ADDR_SIZE);
             memcpy((void *) dev->ble_addr,(void *)&p_devdata_cache[rev2_dev_ble_addr],BTIF_BD_ADDR_SIZE);
+#ifdef CMT_008_BLE_ENABLE
+            if(user_custom_get_bt_name_len())
+            {
+                dev->localname = user_custom_get_bt_name();
+            }
+            else
+            {
+                dev->localname = (char *)&p_devdata_cache[rev2_dev_name];
+            }
+#else /*CMT_008_BLE_ENABLE*/
             dev->localname = (char *)&p_devdata_cache[rev2_dev_name];
+#endif /*CMT_008_BLE_ENABLE*/
             dev->ble_name = (char *)&p_devdata_cache[rev2_dev_ble_name];
         }
 

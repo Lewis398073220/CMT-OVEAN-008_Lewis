@@ -85,6 +85,7 @@ ccflags-y +=  \
 	-Iservices\multimedia\audio\process\filters\include \
 	-Iservices\bt_app\a2dp_codecs\include \
 	-Iplatform\drivers\ac107 \
+    -Iservices/nv_section/userdata_section \
  -Iservices/bt_app \
 					-Iservices/audio_bt \
                     -Iservices/audio_manager \

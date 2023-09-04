@@ -76,7 +76,9 @@ ccflags-y +=  \
     -Iapps/dsp_m55 \
     -Iplatform/drivers/cp_accel \
     -Iservices/audio_manager \
-    -Iplatform/drivers/cst812t
+    -Iplatform/drivers/cst812t \
+    -Ibthost/stack/ble_profiles/tota \
+    -Ibthost/stack/ble_profiles/inc
 
 
 ifeq ($(BLE_USB_AUDIO_SUPPORT),1)

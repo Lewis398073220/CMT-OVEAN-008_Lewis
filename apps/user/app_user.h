@@ -70,6 +70,12 @@ extern bool reconncect_null_by_user;
 extern "C" {
 #endif
 
+
+const char *user_custom_get_bt_name(void);
+bool user_custom_get_bt_name_len(void);
+void user_custom_nvrecord_data_get(void);
+void user_custom_nvrecord_set_bt_name(char* data, uint8_t len);
+
 int app_user_event_open_module(void);
 void app_user_event_close_module(void);
 

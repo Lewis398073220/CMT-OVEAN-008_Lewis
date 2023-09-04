@@ -303,6 +303,10 @@ extern "C" int32_t voice_dev_init(void);
 #include "cst_ctp_hynitron_ext.h"
 #endif /*__CST816S_TOUCH__*/
 
+#ifdef CMT_008_BLE_ENABLE
+#include "tota_ble_custom.h"
+#endif /*CMT_008_BLE_ENABLE*/
+
 #ifdef __USE_3_5JACK_CTR__
 #include "app_user.h"
 
@@ -1109,8 +1113,6 @@ extern struct BT_DEVICE_T  app_bt_device;
 
 void app_factory_reset(void)
 {
-	//app_status_indication_recover_set(APP_STATUS_INDICATION_FACTORYRESET);
-
 	app_audio_sendrequest(APP_BT_STREAM_INVALID, (uint8_t)APP_BT_SETTING_CLOSEALL, 0);
 	osDelay(500);
 
@@ -1118,23 +1120,6 @@ void app_factory_reset(void)
 	osDelay(800);
 	
     media_PlayAudio(AUD_ID_BT_FACTORY_RESET, 0);
-
-#if 0
-	struct nvrecord_env_t *nvrecord_env;
-	nv_record_sector_clear();
-	nv_record_env_init();
-	nv_record_env_get(&nvrecord_env);
-	if(nvrecord_env) {
-		nvrecord_env->media_language.language = NVRAM_ENV_MEDIA_LANGUAGE_DEFAULT;        
-        nvrecord_env->factory_tester_status.status = NVRAM_ENV_FACTORY_TESTER_STATUS_DEFAULT;
-    }
-    nv_record_env_set(nvrecord_env);
-#if FPGA==0	
-    nv_record_flash_flush();
-#endif
-#else
-	//nv_record_rebuild(NV_REBUILD_ALL);
-#endif
 
     nv_record_rebuild(NV_REBUILD_ALL);
 	osDelay(500);
@@ -1148,11 +1133,6 @@ void app_factory_reset(void)
     media_PlayAudio(AUD_ID_BT_PAIR_ENABLE, 0);
     app_anc_switch(APP_ANC_MODE1);
 
-	//app_bt_reconnect_idle_mode();
-//#ifdef  __IAG_BLE_INCLUDE__
-	//app_ble_force_switch_adv(BLE_SWITCH_USER_BT_CONNECT, false);
-//#endif
-	//app_bt_accessmode_set_req(BTIF_BT_DEFAULT_ACCESS_MODE_PAIR);
 }
 #endif /*CMT_008_UI*/
 /* Add by jay, end. */
@@ -2166,6 +2146,7 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 #else
     TRACE(0,"app_init\n");
 #endif
+    TRACE(0,"Jay1 app_init\n");
 
 #ifdef FLASH_UNIQUE_ID
     uint8_t flash_unique_id[HAL_NORFLASH_UNIQUE_ID_LEN] = {0};
@@ -2199,6 +2180,11 @@ osPriority formerPriority = osThreadGetPriority(app_thread_id);
 
     nv_record_init();
     factory_section_init();
+
+#ifdef CMT_008_BLE_ENABLE
+    user_custom_nvrecord_data_get();
+#endif /*CMT_008_BLE_ENABLE*/
+
 #ifdef PROMPT_IN_FLASH
     nv_record_prompt_rec_init();
 #if defined(MEDIA_PLAYER_SUPPORT)
@@ -3013,6 +2999,7 @@ int app_init_btc(void)
     TRACE(2,"__factory_start: %p length: 0x%x", __factory_start, FACTORY_SECTION_SIZE);
 
     TRACE(0,"app_init\n");
+    TRACE(0,"Jay app_init\n");
     nv_record_init();
     factory_section_init();
 
@@ -3021,8 +3008,6 @@ int app_init_btc(void)
     factory_section_open();
 //    app_bt_connect2tester_init();
     nv_record_env_get(&nvrecord_env);
-
-
 
     app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_104M);
     list_init();
