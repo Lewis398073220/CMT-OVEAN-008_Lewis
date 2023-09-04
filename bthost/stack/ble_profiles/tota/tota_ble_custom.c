@@ -36,6 +36,7 @@
 #include "hal_codec.h"
 
 
+
 static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, uint8_t conidx, uint16_t handle, const uint8_t* ptrData, uint32_t length)
 {
     TRACE(1, "[%s]  conidx:[%d]", __func__, conidx);
@@ -106,6 +107,15 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
     switch (data[1])
     {
         case TOTA_BLE_CMT_COMMAND_SET_CLEAR_PAIRING_HISTORY:
+            if(data[2] == 0x01 && data[3] == 0x01 && data_len == 0x04)
+            {
+                app_ibrt_if_nvrecord_delete_all_mobile_record();
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_DEVICE_FACTORY:
