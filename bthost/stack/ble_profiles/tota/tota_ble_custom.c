@@ -162,6 +162,17 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_FUNC_ON_OFF:
+            if(data[2] && (data[3] == 0x00 || data[3] == 0x01))
+            {
+                bool touch_lock = data[3] ? 1 : 0;
+                user_custom_set_touch_clock(touch_lock);
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_L_R_CHANNEL_BALANCE:
@@ -276,6 +287,16 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_TOUCH_FUNC_ON_OFF:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = user_custom_get_touch_clock();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_HEADSET_ADDRESS:

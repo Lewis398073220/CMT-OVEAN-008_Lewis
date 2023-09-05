@@ -25,7 +25,7 @@
 #include "app_anc.h"
 #include "apps.h"
 #include "app_bt_stream.h"
-
+#include "app_user.h"
 
 #include "cst_capacitive_tp_hynitron_cst0xx.h"
 #include "cst_ctp_hynitron_ext.h"
@@ -176,7 +176,7 @@ static void cst816s_int_irq(void)
 	hal_gpio_setup_irq((enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN, &cfg);
 }
 
-static void cst816s_int_disable_irq(void)
+/*static void cst816s_int_disable_irq(void)
 {
 	struct HAL_GPIO_IRQ_CFG_T cfg;
 		
@@ -187,12 +187,11 @@ static void cst816s_int_disable_irq(void)
 	cfg.irq_polarity = HAL_GPIO_IRQ_POLARITY_LOW_FALLING;
 		
 	hal_gpio_setup_irq((enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN, &cfg);
-}
+}*/
 
 static uint8_t hal_get_cst816s_int_level(void)
 {
-    //return (hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN));
-    return (hal_gpio_pin_get_dir((enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN));
+    return (hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN));
 }
 
 static int touch_event_post(uint32_t id);
@@ -200,15 +199,22 @@ static void cst816s_int_handler(enum HAL_GPIO_PIN_T pin)
 {
 	uint8_t temp[1];
 
-	CTP_DBG_TRACE(1,"******************************************%s, %d, %d",__func__,(enum HAL_GPIO_PIN_T)pin,(enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN);	
+	CTP_DBG_TRACE(1,"%s, INTR_DET_PIN:[%d]",__func__,((enum HAL_GPIO_PIN_T)pin == (enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN) ? TRUE : (enum HAL_GPIO_PIN_T)pin);	
 
-	if (pin != (enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN)
-		return;
+	if(pin != (enum HAL_GPIO_PIN_T)CST816S_INTR_DET_PIN)
+	{
+	    return;
+    }
 
-	cst816s_int_disable_irq();
+    if(user_custom_get_touch_clock())
+    {
+        return;
+    }
+
+	//cst816s_int_disable_irq();
 
 	if(!hal_get_cst816s_int_level())
-	{   CTP_DBG_TRACE(1,"******%s: ***********",__func__);
+	{
 		gesture_id=0;
 
 		temp[0]=0x01;
@@ -219,7 +225,7 @@ static void cst816s_int_handler(enum HAL_GPIO_PIN_T pin)
 				
 		touch_event_post(TOUCH_EVENT_PRO);		
 	}
-	cst816s_int_irq();
+    cst816s_int_irq();
 }
 
 bool ctp_hynitron_cst0_init(void)

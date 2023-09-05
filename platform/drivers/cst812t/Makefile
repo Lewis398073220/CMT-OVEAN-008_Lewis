@@ -27,7 +27,7 @@ subdir-ccflags-y += -Iservices/bt_app \
                     -Ibthost/stack/bt_profiles/inc \
                     -Ibthost/adapter/inc/bt \
                     -Ibthost/service/bt_app/inc/a2dp_codecs \
-                    -Iapps/user/h_file \
+                    -Iapps/user
 
 
 

@@ -70,7 +70,14 @@ extern bool reconncect_null_by_user;
 extern "C" {
 #endif
 
+typedef struct {
+    uint8_t user_set_bt_name_len;
+    char user_set_bt_name[27]; /* 27 = CLASSIC_BTNAME_LEN */
+    bool touch_lock;
+} app_user_custom_data_t;
 
+bool user_custom_get_touch_clock(void);
+void user_custom_set_touch_clock(bool lock);
 const char *user_custom_get_bt_name(void);
 bool user_custom_get_bt_name_len(void);
 void user_custom_nvrecord_data_get(void);

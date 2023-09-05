@@ -358,17 +358,37 @@ void apps_jack_event_process(void)
 }
 #endif
 
-static uint8_t user_set_bt_name_len = 0;
-static char user_set_bt_name[27]; /* 27 = CLASSIC_BTNAME_LEN */
+/*******************************************************************************************/
+/*******************************************************************************************/
+/*******************************************************************************************/
+
+app_user_custom_data_t user_data;
+
+void user_custom_set_touch_clock(bool lock)
+{
+    struct nvrecord_env_t *nvrecord_env;
+	nv_record_env_get(&nvrecord_env);
+
+    user_data.touch_lock = lock;
+    nvrecord_env->touch_lock = lock;
+
+    nv_record_env_set(nvrecord_env);
+    nv_record_flash_flush();
+}
+
+bool user_custom_get_touch_clock(void)
+{
+    return user_data.touch_lock;
+}
 
 const char *user_custom_get_bt_name(void)
 {
-    return user_set_bt_name;
+    return user_data.user_set_bt_name;
 }
 
 bool user_custom_get_bt_name_len(void)
 {
-    return user_set_bt_name_len;
+    return user_data.user_set_bt_name_len;
 }
 
 void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
@@ -376,14 +396,13 @@ void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
 	struct nvrecord_env_t *nvrecord_env;
 	nv_record_env_get(&nvrecord_env);
 
-    user_set_bt_name_len = len;
-    memcpy(user_set_bt_name, data, len);
+    user_data.user_set_bt_name_len = len;
+    memcpy(user_data.user_set_bt_name, data, len);
 
 	nvrecord_env->custom_bt_name_len = len;
     memcpy(nvrecord_env->custom_bt_name, data, len);
 
 	nv_record_env_set(nvrecord_env);
-
     nv_record_flash_flush();
 }
 
@@ -391,12 +410,11 @@ void user_custom_nvrecord_data_get(void)
 {
     TRACE(1, " [%s] ", __func__);
 	struct nvrecord_env_t *nvrecord_env;
-
 	nv_record_env_get(&nvrecord_env);
 
-    user_set_bt_name_len = nvrecord_env->custom_bt_name_len;
-
-    memcpy(user_set_bt_name, nvrecord_env->custom_bt_name, user_set_bt_name_len);
+    user_data.user_set_bt_name_len = nvrecord_env->custom_bt_name_len;
+    memcpy(user_data.user_set_bt_name, nvrecord_env->custom_bt_name, user_data.user_set_bt_name_len);
+    user_data.touch_lock = nvrecord_env->touch_lock;
 }
 
 #if 0
