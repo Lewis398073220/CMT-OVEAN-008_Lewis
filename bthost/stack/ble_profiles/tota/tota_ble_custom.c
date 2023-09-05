@@ -131,19 +131,17 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_HEADSET_VOLUME:
+            if(data[2] == 0x01 && data_len == 0x04 && (data[3] >= 0x00 || data[3] <= 0x0F))
             {
-                if(data[2] == 0x01 && (data[3] >= 0x00 || data[3] <= 0x0F))
-                {
-                    app_bt_stream_volumeset(data[3]);
+                app_bt_stream_volumeset(data[3]);
 
-                    rsp_status = SUCCESS_STATUS;
-                }
-                else
-                    rsp_status = NOT_SUPPORT_STATUS;
-
-                data_len = 0x03;
-                custon_tota_ble_send_response(rsp_status, data, data_len);
+                rsp_status = SUCCESS_STATUS;
             }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_LOW_LATENCY_MODE:
@@ -275,6 +273,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_HEADSET_VOLUME:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = app_bt_stream_local_volume_get();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);            
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_LOW_LATENCY_MODE:    
@@ -379,6 +388,35 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_CHIPSET_INFO:
+            /* define chip info.
+             *  +---------------+------------+------------+------+ +-----+
+        	 *	|   +     byte4 |            |            |      | |     |
+        	 *  |       +       |    0x01    |    0x02    | 0x03 | |  N  |
+        	 *  |byte3      +   |            |            |      | |     |
+             *  +---------------+------------+------------+------+ +-----+
+             *  |     0x01      |  QCC3071   |  QCC3072   |      | |     | 
+             *  +---------------+------------+------------+------+ +-----+
+        	 *  |     0x02      | BES2600IHC |  BES2700H  |      | |     |
+        	 *  +---------------+-------------------------+------+ +-----+
+        	 *  |     0x03      |            |            |      | |     |
+        	 *  +---------------+------------+------------+------+ +-----+
+        	 *  +---------------+------------+------------+------+ +-----+
+        	 *  |       N       |            |            |      | |     |
+        	 *  +---------------+------------+------------+------+ +-----+
+             */	
+
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x02;
+                data[3] = 0x02;
+                data[4] = 0x02;
+                data_len = 0x05;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_SIDETONE_CONTROL_STATUS:
