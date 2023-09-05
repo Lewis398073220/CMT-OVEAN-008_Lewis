@@ -34,7 +34,7 @@
 #include "app_bt_stream.h"
 #include "bt_sco_chain.h"
 #include "hal_codec.h"
-
+#include "app_hfp.h"
 
 
 static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, uint8_t conidx, uint16_t handle, const uint8_t* ptrData, uint32_t length)
@@ -238,6 +238,16 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_VOICE_ASSISTANT_CONTROL:
+            if(data[2] == 0x01 && data_len == 0x04 && (data[3] == 0x00 || data[3] == 0x01))
+            {
+                app_hfp_siri_voice((bool) data[3]);
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_FLASHING_LIGHTS:
