@@ -108,9 +108,18 @@ extern const uint16_t CFG_HW_ADCKEY_MAP_TABLE[CFG_HW_ADCKEY_NUMBER];
 #endif
 #endif /*CMT_008_UI*/
 
+#ifdef CMT_008_LDO_1V8_3V3_ENABLE
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_3v3_enable;
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_1v8_enable;
+#endif /*CMT_008_LDO_1V8_3V3_ENABLE*/
+
 #ifdef CMT_008_LDO_ENABLE
 extern const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_enable;
 #endif /*CMT_008_LDO_ENABLE*/
+
+#ifdef __AC107_ADC__
+extern const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ac107_ldo_enable;
+#endif /*__AC107_ADC__*/
 
 #if defined(__USE_3_5JACK_CTR__)
 #define PIN_3_5JACK_DETECTE HAL_IOMUX_PIN_P1_4

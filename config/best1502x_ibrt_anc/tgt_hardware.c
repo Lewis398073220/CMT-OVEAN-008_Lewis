@@ -21,13 +21,27 @@
 #include "limiter.h"
 #include "spectrum_fix.h"
 
-#ifdef CMT_008_LDO_ENABLE
-
+#ifdef CMT_008_LDO_ENABLE  /* Match the old hardware setting. add by Jay. */
 const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_enable = {
     HAL_IOMUX_PIN_P0_3, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
 };
-
 #endif /*CMT_008_LDO_ENABLE*/
+
+#ifdef CMT_008_LDO_1V8_3V3_ENABLE /* Match the new hardware setting. add by Jay. */
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_3v3_enable = {
+    HAL_IOMUX_PIN_P1_7, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
+};
+
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_1v8_enable = {
+    HAL_IOMUX_PIN_P1_5, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
+};
+#endif /*CMT_008_LDO_1V8_3V3_ENABLE*/
+
+#ifdef __AC107_ADC__
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ac107_ldo_enable = {
+    HAL_IOMUX_PIN_P1_4, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_NOPULL
+};
+#endif /*__AC107_ADC__*/
 
 #if defined(__USE_3_5JACK_CTR__)
 const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_pio_3p5_jack_detecter = {

@@ -534,7 +534,7 @@ int main(void)
 #else
 
 #ifdef CMT_008_LDO_ENABLE
-        if (cfg_hw_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
+        if(cfg_hw_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
         {
             /* Setting the LDO pin is output function and high level. */
             hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_enable, 1);
@@ -542,12 +542,39 @@ int main(void)
         }
 #endif /*CMT_008_LDO_ENABLE*/
 
+#ifdef CMT_008_LDO_1V8_3V3_ENABLE
+        if(cfg_hw_ldo_3v3_enable.pin != HAL_IOMUX_PIN_NUM)
+        {
+            /* Setting the LDO pin is output function and high level. */
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_3v3_enable, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_3v3_enable.pin, HAL_GPIO_DIR_OUT, 1);
+        }
+
+        if(cfg_hw_ldo_1v8_enable.pin != HAL_IOMUX_PIN_NUM)
+        {
+            /* Setting the LDO pin is output function and high level. */
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ldo_1v8_enable, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ldo_1v8_enable.pin, HAL_GPIO_DIR_OUT, 1);
+        }
+#endif /*CMT_008_LDO_1V8_3V3_ENABLE*/
+
+#ifdef __AC107_ADC__
+        if(cfg_hw_ac107_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
+        {
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_ac107_ldo_enable, 1);
+	        hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_ac107_ldo_enable.pin, HAL_GPIO_DIR_OUT, 0);
+        }
+#endif /*__AC107_ADC__*/
+
 #if defined(__USE_3_5JACK_CTR__)
-        if (cfg_hw_pio_3p5_jack_detecter.pin != HAL_IOMUX_PIN_NUM){
+        if(cfg_hw_pio_3p5_jack_detecter.pin != HAL_IOMUX_PIN_NUM){
             hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&cfg_hw_pio_3p5_jack_detecter, 1);
             hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)cfg_hw_pio_3p5_jack_detecter.pin, HAL_GPIO_DIR_IN, 0);
         }
 #endif /* __USE_3_5JACK_CTR__ */
+
+        pmu_vio_3v3(true); //Add by Jay, for the AC107's power and touch I2C pull up.
+
         ret = app_init();
 #endif
 

@@ -157,21 +157,12 @@ static void hal_set_ac107_rst_low(void)
 
 void ac107_hw_close(void)
 {
-    pmu_vio_3v3(false);
-
-#if defined(__USE_LDO_CTL__)
-	hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)cfg_hw_ldo_ctl.pin);
-#endif
+	hal_gpio_pin_clr((enum HAL_GPIO_PIN_T)cfg_hw_ac107_ldo_enable.pin);
 }
 
 void ac107_hw_open(void)
 {
-    pmu_vio_3v3(true);
-
-    //ac107_i2c_init();
-#if defined(__USE_LDO_CTL__)
-	hal_gpio_pin_set((enum HAL_GPIO_PIN_T)cfg_hw_ldo_ctl.pin);
-#endif
+	hal_gpio_pin_set((enum HAL_GPIO_PIN_T)cfg_hw_ac107_ldo_enable.pin);
 }
 
 void ac107_hw_init(void)
