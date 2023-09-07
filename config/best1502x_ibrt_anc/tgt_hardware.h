@@ -239,7 +239,7 @@ extern const struct CODEC_DAC_VOL_T codec_dac_hfp_vol[TGT_VOLUME_LEVEL_QTY];
 #endif /*CMT_008_BATTERY_LOW*/
 
 #ifdef CMT_008_NTC_DETECT
-//extern const struct HAL_IOMUX_PIN_FUNCTION_MAP Cfg_ntc_volt_ctr;
+extern const struct HAL_IOMUX_PIN_FUNCTION_MAP Cfg_ntc_volt_ctr;
 #endif /*CMT_008_NTC_DETECT*/
 
 extern const struct HAL_IOMUX_PIN_FUNCTION_MAP app_battery_ext_charger_enable_cfg;

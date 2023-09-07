@@ -1,6 +1,6 @@
 #### Add by Jay #####
 ## TODO: Will Enable to match the new hardware setting. add by Jay. ##
-export CMT_008_LDO_1V8_3V3_ENABLE ?= 0
+export CMT_008_LDO_1V8_3V3_ENABLE ?= 1
 ifeq ($(CMT_008_LDO_ENABLE),1)
 KBUILD_CPPFLAGS += -DCMT_008_LDO_ENABLE
 endif

@@ -558,6 +558,15 @@ int main(void)
         }
 #endif /*CMT_008_LDO_1V8_3V3_ENABLE*/
 
+#ifdef CMT_008_NTC_DETECT
+        if(Cfg_ntc_volt_ctr.pin != HAL_IOMUX_PIN_NUM)
+        {
+            /* Setting the LDO pin is output function and high level. */
+            hal_iomux_init((struct HAL_IOMUX_PIN_FUNCTION_MAP *)&Cfg_ntc_volt_ctr, 1);
+            hal_gpio_pin_set_dir((enum HAL_GPIO_PIN_T)Cfg_ntc_volt_ctr.pin, HAL_GPIO_DIR_OUT, 1);
+        }
+#endif /*CMT_008_NTC_DETECT*/
+
 #ifdef __AC107_ADC__
         if(cfg_hw_ac107_ldo_enable.pin != HAL_IOMUX_PIN_NUM)
         {

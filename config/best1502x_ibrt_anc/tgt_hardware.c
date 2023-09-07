@@ -290,9 +290,9 @@ const struct AUD_IO_PATH_CFG_T cfg_audio_input_path_cfg[CFG_HW_AUD_INPUT_PATH_NU
 };
 
 #ifdef CMT_008_NTC_DETECT
-/*const struct HAL_IOMUX_PIN_FUNCTION_MAP Cfg_ntc_volt_ctr = {
+const struct HAL_IOMUX_PIN_FUNCTION_MAP Cfg_ntc_volt_ctr = {
     HAL_GPIO_PIN_P1_3, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_MEM, HAL_IOMUX_PIN_NOPULL,
-};*/
+};
 #endif /*CMT_008_NTC_DETECT*/
 
 #if 1
