@@ -184,7 +184,6 @@ const struct prf_task_cbs* tota_prf_itf_get(void);
 bool tota_send_ind_ntf_generic(bool isNotification, uint8_t conidx, const uint8_t* ptrData, uint32_t length);
 
 
-
 #endif /* #if (BLE_TOTA) */
 
 /// @} TOTA

@@ -10,6 +10,7 @@
 #include "tota_ble.h"
 
 
+
 typedef enum
 {
     SUCCESS_STATUS = 0x00,
@@ -117,11 +118,16 @@ typedef enum
 #define TOTA_BLE_CMT_COMMAND_NOTIFY_KEY_REDEFINITION                 0x0027  /*Notify keys redefinition*/
 
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length);
 bool custon_tota_ble_send_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len);
 bool custon_tota_ble_send_notify_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CMT_008_BLE_ENABLE */

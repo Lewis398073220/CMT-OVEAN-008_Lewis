@@ -44,6 +44,8 @@ endif
 subdir-ccflags-y += \
     $(BLUETOOTH_ADAPTER_INCLUDES) \
     -Iutils/cqueue \
-    -Iservices/audio_bt
+    -Iservices/audio_bt \
+    -Iapps/user
+
 
 

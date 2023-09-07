@@ -37,16 +37,16 @@
 #include "app_hfp.h"
 
 
-static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, uint8_t conidx, uint16_t handle, const uint8_t* ptrData, uint32_t length)
+
+static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, bool enable, uint8_t conidx, uint16_t handle, const uint8_t* ptrData, uint32_t length)
 {
-    TRACE(1, "[%s]  conidx:[%d]", __func__, conidx);
-    enum gatt_evt_type evtType = isNotification?GATT_NOTIFY:GATT_INDICATE;
+    TRACE(1, "[%s]  notify:[%d], conidx:[%d], handle:[%d]", __func__, isNotification, conidx, handle);
+    enum gatt_evt_type evtType = enable?GATT_NOTIFY:GATT_INDICATE;
 
     PRF_ENV_T(tota) *tota_env = PRF_ENV_GET(TOTA, tota);
 
-    if ((tota_env->ntfIndEnableFlag[conidx])&(1 << (uint8_t)evtType)) 
+    if(isNotification & (1 << (uint8_t)evtType))
     {
-
         co_buf_t* p_buf = NULL;
         prf_buf_alloc(&p_buf, length);
 
@@ -71,11 +71,6 @@ static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, uint8_t co
     }
 }
 
-static bool custom_tota_ble_send_notification(uint16_t handle, uint8_t* ptrData, uint32_t length)
-{
-    return custom_tota_ble_send_ind_ntf_generic(true, false, handle, ptrData, length);
-}
-
 bool custon_tota_ble_send_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len)
 {
     if(rsp_status != NO_NEED_STATUS_RESP)
@@ -85,7 +80,12 @@ bool custon_tota_ble_send_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrDat
         ptrData_len ++;
     }
 
-    return custom_tota_ble_send_notification(TOTA_IDX_VAL, ptrData, ptrData_len);
+    return custom_tota_ble_send_ind_ntf_generic(user_custom_get_notify_enable_idx(),\
+                                                                        true,\
+                                                                        false,\
+                                                                        TOTA_IDX_VAL,\
+                                                                        ptrData,\
+                                                                        ptrData_len);
 }
 
 bool custon_tota_ble_send_notify_response(TOTA_BLE_STATUS_E rsp_status, uint8_t* ptrData, uint32_t ptrData_len)
@@ -97,7 +97,12 @@ bool custon_tota_ble_send_notify_response(TOTA_BLE_STATUS_E rsp_status, uint8_t*
         ptrData_len ++;
     }
 
-    return custom_tota_ble_send_notification(TOTA_IDX1_VAL, ptrData, ptrData_len);
+    return custom_tota_ble_send_ind_ntf_generic(user_custom_get_notify_enable_idx1(),\
+                                                                        true,\
+                                                                        false,\
+                                                                        TOTA_IDX1_VAL,\
+                                                                        ptrData,\
+                                                                        ptrData_len);
 }
 
 static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
@@ -196,6 +201,15 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SOUND_PROMPTS_LEVEL:
+            if(data[2] == 0x01 && data_len == 0x04)
+            {
+                user_custom_set_sound_prompt(data[3]);
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SHUTDOWN_TIME:

@@ -29,6 +29,12 @@
 #include "apps.h"
 #include "app_hfp.h"
 
+#ifdef CMT_008_BLE_ENABLE
+//#include "../../bthost/stack/ble_profiles/inc/toat_ble_custom.h"
+//#include "toat_ble_custom.h"
+#endif /*CMT_008_BLE_ENABLE*/
+#include "app_user.h"
+
 #ifdef APP_BATTERY_ENABLE
 #include "app_status_ind.h"
 #include "bluetooth_bt_api.h"
@@ -63,7 +69,7 @@ extern "C" bool app_usbaudio_mode_on(void);
 
 #ifndef APP_BATTERY_MIN_MV
 #ifdef CMT_008_BATTERY_LOW
-#define APP_BATTERY_MIN_MV (3400) //Modifed by Jay, changed from 3200 to 3400. 
+#define APP_BATTERY_MIN_MV (3450) //Modifed by Jay, changed from 3200 to 3450. 
 #else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_MIN_MV (3200)
 #endif /*CMT_008_BATTERY_LOW*/
@@ -75,7 +81,7 @@ extern "C" bool app_usbaudio_mode_on(void);
 
 #ifndef APP_BATTERY_PD_MV
 #ifdef CMT_008_BATTERY_LOW
-#define APP_BATTERY_PD_MV   (3350) //Modifed by Jay, changed from 3100 to 3350. 
+#define APP_BATTERY_PD_MV   (3400) //Modifed by Jay, changed from 3100 to 3400. 
 #else /*CMT_008_BATTERY_LOW*/
 #define APP_BATTERY_PD_MV   (3100)
 #endif /*CMT_008_BATTERY_LOW*/
@@ -83,11 +89,11 @@ extern "C" bool app_usbaudio_mode_on(void);
 #endif
 
 #ifndef APP_BATTERY_CHARGE_TIMEOUT_MIN
-#define APP_BATTERY_CHARGE_TIMEOUT_MIN (90)
+#define APP_BATTERY_CHARGE_TIMEOUT_MIN (210) //Modifed by Jay, changed from 90 to 210.
 #endif
 
 #ifndef APP_BATTERY_CHARGE_OFFSET_MV
-#define APP_BATTERY_CHARGE_OFFSET_MV (20)
+#define APP_BATTERY_CHARGE_OFFSET_MV (50) //Modifed by Jay, changed from 20 to 50.
 #endif
 
 #ifndef CHARGER_PLUGINOUT_RESET
@@ -101,6 +107,8 @@ extern "C" bool app_usbaudio_mode_on(void);
 #ifndef CHARGER_PLUGINOUT_DEBOUNCE_CNT
 #define CHARGER_PLUGINOUT_DEBOUNCE_CNT (3)
 #endif
+
+static APP_BATTERY_MV_T batterylevel[]={4030,3920,3820,3740,3670,3620,3570,3510,3440};//copy by pang
 
 #define APP_BATTERY_CHARGING_PLUGOUT_DEDOUNCE_CNT (APP_BATTERY_CHARGING_PERIODIC_MS<500?3:1)
 
@@ -233,7 +241,7 @@ void app_battery_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
     uint32_t meanBattVolt = 0;
     HAL_GPADC_MV_T vbat = volt;
     APP_BATTERY_TRACE(2,"%s %d",__func__, vbat);
-    TRACE(2,"volt:[%d],  volt<<2:[%d], %s", vbat, vbat<<2, __func__);
+    TRACE(2,"%s, volt:[%d],  volt<<2:[%d], level[%d]", __func__, vbat, vbat<<2, app_battery_current_level());
  #ifdef CHARGER_SPICIAL_CHAN
 J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BATTERY_ERR_MV))
 #else
@@ -267,13 +275,13 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
                 TRACE(2, "%s   OVER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_OVERVOLT, meanBattVolt);
             }
-            /* BattVolt > 3350mV && BattVolt < 3400mV, now is low battery state. */
+            /* BattVolt > 3400mV && BattVolt < 3450mV, now is low battery state. */
             else if((meanBattVolt>app_battery_measure.pdvolt) && (meanBattVolt<app_battery_measure.lowvolt))
             {
                 TRACE(2, "%s   UNDER   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_UNDERVOLT, meanBattVolt);
             }
-            else if(meanBattVolt<=app_battery_measure.pdvolt) //lenss than or equal to 3350mV.
+            else if(meanBattVolt<=app_battery_measure.pdvolt) //lenss than or equal to 3400mV.
             {
                 TRACE(2, "%s   PD   BattVolt[%d]", __func__, meanBattVolt);
                 app_battery_measure.cb(APP_BATTERY_STATUS_PDVOLT, meanBattVolt);
@@ -289,11 +297,26 @@ J    if ((vbat == HAL_GPADC_BAD_VALUE) || ((vbat * app_vbat_volt_div) <= APP_BAT
     {
         int8_t level = 0;
 #ifdef CHARGER_SPICIAL_CHAN
-         meanBattVolt = vbat * app_vbat_volt_div;
+J         meanBattVolt = vbat * app_vbat_volt_div;
 #else
-         meanBattVolt = vbat<<2;
+         //meanBattVolt = vbat<<2;
+
+        /* Get average meanBattVolt */
+        for (i=0; i<app_battery_measure.index; i++)
+        {
+            meanBattVolt += app_battery_measure.voltage[i];
+        }
+        meanBattVolt /= app_battery_measure.index;
+
 #endif
-        level = (meanBattVolt-APP_BATTERY_PD_MV)/APP_BATTERY_MV_BASE;
+        //level = (meanBattVolt-APP_BATTERY_PD_MV)/APP_BATTERY_MV_BASE;
+
+        for(i=0;i<9;i++)
+        {
+            if(meanBattVolt>=batterylevel[i])
+                break;
+        }
+        level=10-i;
 
         if (level<APP_BATTERY_LEVEL_MIN)
             level = APP_BATTERY_LEVEL_MIN;
@@ -369,6 +392,10 @@ int app_status_battery_report(uint8_t level)
 #else
 int app_status_battery_report(uint8_t level)
 {
+#ifdef CMT_008_BLE_ENABLE
+    user_custom_battery_level_notify(level+1);
+#endif /*CMT_008_BLE_ENABLE*/
+
 #if defined(__BTIF_EARPHONE__)
     app_10_second_timer_check();
 #endif
@@ -401,7 +428,7 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
     int8_t level = 0;
 #ifdef CMT_008_BATTERY_LOW
     static uint8_t battery_low_play_time = 0;
-
+    uint8_t i = 0;
 #endif /*CMT_008_BATTERY_LOW*/
 
     switch (status)
@@ -455,7 +482,16 @@ int app_battery_handle_process_normal(uint32_t status,  union APP_BATTERY_MSG_PR
                 level /= 10;
             }
 #else
-            app_battery_measure.currlevel = level;
+            //app_battery_measure.currlevel = level;
+
+            /* Get average meanBattVolt */
+            for(i=0;i<9;i++)
+            {
+                if(app_battery_measure.currvolt>=batterylevel[i])
+                    break;
+            }
+
+            level=9-i;	
 #endif
             app_status_battery_report(level);
             break;

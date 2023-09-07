@@ -33,6 +33,7 @@
 
 #ifdef CMT_008_BLE_ENABLE
 #include "tota_ble_custom.h"
+#include "app_user.h"
 #endif
 
 /*
@@ -226,9 +227,10 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
 #ifdef CMT_008_BLE_ENABLE
 
             //TODO: Notify flag need by used. Jay
-            uint16_t notify_flag;
+            uint8_t notify_flag;
             notify_flag = pData[0];
             TRACE(1,"TOTA_IDX_NTF_CFG Notify:[%d]", notify_flag);
+            user_custom_get_notify_flag(true, notify_flag);
 
 #endif /*CMT_008_BLE_ENABLE*/
 
@@ -294,9 +296,11 @@ __STATIC void tota_gatt_cb_att_set(uint8_t conidx, uint8_t user_lid, uint16_t to
             TRACE(1,"tota_env->shdl + TOTA_IDX1_DESC:[%d]", tota_env->shdl + TOTA_IDX1_DESC);
 
             //TODO: Notify flag need by used. Jay
-            uint16_t notify_flag;
+            uint8_t notify_flag;
             notify_flag = pData[0];
             TRACE(1,"TOTA_IDX1_DESC Notify:[%d]", notify_flag);
+
+            user_custom_get_notify_flag(false, notify_flag);
             gatt_srv_att_val_set_cfm(conidx, user_lid, token, status);
         }
 #endif /*CMT_008_BLE_ENABLE*/

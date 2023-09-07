@@ -33,6 +33,10 @@
 #include "ac107.h"
 #endif
 
+#ifdef CMT_008_BLE_ENABLE
+#include "tota_ble_custom.h"
+#endif /*CMT_008_BLE_ENABLE*/
+
 extern struct BT_DEVICE_T  app_bt_device;
 
 enum
@@ -364,10 +368,50 @@ void apps_jack_event_process(void)
 
 app_user_custom_data_t user_data;
 
+bool user_custom_get_notify_enable_idx(void)
+{
+    return user_data.notify_enable_idx_cfg;
+}
+
+bool user_custom_get_notify_enable_idx1(void)
+{
+    return user_data.notify_enable_idx1_cfg;
+}
+
+void user_custom_get_notify_flag(bool flag, uint8_t notify_enable)
+{
+    if(flag)
+    {
+        user_data.notify_enable_idx_cfg = notify_enable;
+    }
+    else
+    {
+        user_data.notify_enable_idx1_cfg = notify_enable;
+    }
+}
+
+void user_custom_battery_level_notify(uint8_t level)
+{
+    uint8_t data[] = {0x20, 0x1F, 0x03, level, 0x00, 0x00};
+    custon_tota_ble_send_notify_response(NO_NEED_STATUS_RESP, data, sizeof(data));
+}
+
+void user_custom_set_sound_prompt(uint8_t level)
+{
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
+
+    user_data.suond_prompt_level = level;
+    nvrecord_env->suond_prompt_level = level;
+
+    nv_record_env_set(nvrecord_env);
+    nv_record_flash_flush();
+}
+
 void user_custom_set_touch_clock(bool lock)
 {
     struct nvrecord_env_t *nvrecord_env;
-	nv_record_env_get(&nvrecord_env);
+    nv_record_env_get(&nvrecord_env);
 
     user_data.touch_lock = lock;
     nvrecord_env->touch_lock = lock;
@@ -393,24 +437,24 @@ bool user_custom_get_bt_name_len(void)
 
 void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
 { 
-	struct nvrecord_env_t *nvrecord_env;
-	nv_record_env_get(&nvrecord_env);
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
 
     user_data.user_set_bt_name_len = len;
     memcpy(user_data.user_set_bt_name, data, len);
 
-	nvrecord_env->custom_bt_name_len = len;
+    nvrecord_env->custom_bt_name_len = len;
     memcpy(nvrecord_env->custom_bt_name, data, len);
 
-	nv_record_env_set(nvrecord_env);
+    nv_record_env_set(nvrecord_env);
     nv_record_flash_flush();
 }
 
 void user_custom_nvrecord_data_get(void)
 {
     TRACE(1, " [%s] ", __func__);
-	struct nvrecord_env_t *nvrecord_env;
-	nv_record_env_get(&nvrecord_env);
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
 
     user_data.user_set_bt_name_len = nvrecord_env->custom_bt_name_len;
     memcpy(user_data.user_set_bt_name, nvrecord_env->custom_bt_name, user_data.user_set_bt_name_len);

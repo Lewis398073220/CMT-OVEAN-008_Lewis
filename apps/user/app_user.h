@@ -71,11 +71,20 @@ extern "C" {
 #endif
 
 typedef struct {
+    bool notify_enable_idx_cfg;
+    bool notify_enable_idx1_cfg;
+
     uint8_t user_set_bt_name_len;
     char user_set_bt_name[27]; /* 27 = CLASSIC_BTNAME_LEN */
     bool touch_lock;
+    uint8_t suond_prompt_level;
 } app_user_custom_data_t;
 
+bool user_custom_get_notify_enable_idx(void);
+bool user_custom_get_notify_enable_idx1(void);
+void user_custom_battery_level_notify(uint8_t level);
+void user_custom_get_notify_flag(bool flag, uint8_t notify_enable);
+void user_custom_set_sound_prompt(uint8_t level);
 bool user_custom_get_touch_clock(void);
 void user_custom_set_touch_clock(bool lock);
 const char *user_custom_get_bt_name(void);
