@@ -46,8 +46,9 @@ enum
     USER_EVENT_IR=2,
     USER_EVENT_PWM=3,
     USER_EVENT_MOTOR=4,
-	USER_EVENT_AMPCTR=5,
-	USER_EVENT_AUDIO_FADEIN=6,
+    USER_EVENT_AMPCTR=5,
+    USER_EVENT_AUDIO_FADEIN=6,
+    USER_EVENT_CUSTOM=7,
     USER_EVENT_NONE
 };
 
@@ -69,6 +70,12 @@ static uint8_t talkmic_led=1;
 #endif
 
 //static bool boom_mic_enable=0;
+
+static void user_custom_open_timehandler(void const *param);
+static void user_custom_start_timer(void);
+static void user_custom_stop_timer(void);
+static void user_custom_event_process(void);
+
 
 static void user_event_post(uint32_t id)
 {
@@ -93,6 +100,12 @@ static int app_user_event_handle_process(APP_MESSAGE_BODY *msg_body)
 		    apps_jack_event_process();
 		break;
 #endif
+
+#ifdef CMT_008_BLE_ENABLE
+        case USER_EVENT_CUSTOM:
+            user_custom_event_process();
+        break;
+#endif /*CMT_008_BLE_ENABLE*/
 
 #if defined(__USE_IR_CTL__)
 		case USER_EVENT_IR:
@@ -136,6 +149,10 @@ int app_user_event_open_module(void)
 	app_jack_start_timer();
 #endif
 
+#ifdef CMT_008_BLE_ENABLE
+    user_custom_start_timer();
+#endif /*CMT_008_BLE_ENABLE*/
+
 #if defined(__USE_AMP_MUTE_CTR__)
     app_amp_open_start_timer();
 #endif
@@ -166,6 +183,10 @@ void app_user_event_close_module(void)
 #if defined(__USE_3_5JACK_CTR__)    
 	app_jack_stop_timer();
 #endif
+
+#ifdef CMT_008_BLE_ENABLE
+    user_custom_stop_timer();
+#endif /*CMT_008_BLE_ENABLE*/
 
 #if defined(__USE_AMP_MUTE_CTR__)
     app_amp_open_stop_timer();
@@ -252,6 +273,8 @@ void app_jack_stop_timer(void)
 void apps_jack_event_process(void)
 {    	
 	static uint8_t in_val = 0, out_val = 0 , mic_val=0;
+
+    TRACE(1, "     [%s], jack_pin:[%d]", __func__, hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_pio_3p5_jack_detecter.pin));
 
     if(false == apps_3p5_jack_get_val())
     {
@@ -367,6 +390,99 @@ void apps_jack_event_process(void)
 /*******************************************************************************************/
 
 app_user_custom_data_t user_data;
+
+extern "C" void media_PlayAudio(AUD_ID_ENUM id,uint8_t device_id);
+
+
+osTimerId user_custom_timer = NULL;
+static void user_custom_open_timehandler(void const *param);
+osTimerDef(USER_CUSTOM_TIMER, user_custom_open_timehandler);
+#define USER_CUSTOM_CONT_MS (1000)
+
+static uint16_t shutdown_time = 0xFFFF;
+
+static uint32_t set_shutdown_time_second = shutdown_time * 60;
+
+static uint32_t remaining_shutdown_time_second;
+
+static void user_custom_open_timehandler(void const *param)
+{
+	user_event_post(USER_EVENT_CUSTOM);
+}
+
+static void user_custom_start_timer(void)
+{
+	if(user_custom_timer == NULL)
+			user_custom_timer = osTimerCreate(osTimer(USER_CUSTOM_TIMER), osTimerPeriodic, NULL);
+
+	osTimerStop(user_custom_timer);
+	osTimerStart(user_custom_timer,USER_CUSTOM_CONT_MS);
+}
+
+static void user_custom_stop_timer(void)
+{	
+	osTimerStop(user_custom_timer);
+}
+
+static void user_custom_need_shutdown(void)
+{
+    /*disconnect bt*/
+    app_ibrt_if_event_entry(APP_UI_EV_DOCK);
+    app_ibrt_if_event_entry(APP_UI_EV_CASE_CLOSE);
+
+    osDelay(500);
+    app_shutdown();
+}
+
+static void user_custom_event_process(void)
+{
+    if(shutdown_time != 0xFFFF)
+    {
+        /* if shutdown_time is 0x0000, so need shutdown. */
+        if(!shutdown_time)
+        {
+            shutdown_time = 0xFFFF;
+            user_custom_need_shutdown();
+            return;
+        }
+
+        set_shutdown_time_second --;
+
+        remaining_shutdown_time_second = set_shutdown_time_second;
+
+        if(!set_shutdown_time_second)
+        {
+            if(!app_bt_count_connected_device())
+            {
+                shutdown_time = 0xFFFF;
+                return;
+            }
+
+            user_custom_need_shutdown();
+        }
+    }
+}
+
+void user_custom_set_shutdown_time(uint16_t time)
+{
+    shutdown_time = time;
+    set_shutdown_time_second = time * 60;
+}
+
+uint16_t user_custom_get_remaining_shutdown_time(void)
+{
+    uint16_t remaining_time;
+    if(shutdown_time == 0xFFFF)
+    {
+        remaining_time = shutdown_time;
+    }
+    else
+    {
+        remaining_time = (remaining_shutdown_time_second / 60);
+    }
+
+    return remaining_time;
+}
 
 bool user_custom_get_notify_enable_idx(void)
 {

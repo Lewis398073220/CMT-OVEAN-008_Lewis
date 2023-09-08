@@ -213,6 +213,18 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SHUTDOWN_TIME:
+            if(data[2] == 0x04 && data[5] == 0x00 && data[6] == 0x00)
+            {
+                uint16_t shutdown_time = (data[3] << 8) | data[4];
+                user_custom_set_shutdown_time(shutdown_time);
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            data[2] = 0x01;
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_CAMERA_SWITCH:
@@ -370,6 +382,20 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_SHUTDOWN_TIME:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[3] = 0x00;
+                data[4] = 0x00;
+                
+                uint16_t shutdown_time = user_custom_get_remaining_shutdown_time();
+                data[5] = (shutdown_time & 0xFF00) >> 8;
+                data[6] = shutdown_time & 0xFF;
+                rsp_status = NO_NEED_STATUS_RESP;
+                data_len = 0x07;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_CAMERA_SWITCH_STATE:
