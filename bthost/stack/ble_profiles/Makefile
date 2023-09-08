@@ -165,7 +165,8 @@ subdir-ccflags-y += \
     -Iservices/ibrt_middleware/inc \
     -Iservices/ibrt_ui_v2/inc \
     -Iservices/nv_section/userdata_section \
-    -Iapps/user
+    -Iapps/user \
+    -Iplatform/drivers/cst812t
 
 ifeq ($(BES_OTA),1)
 ifeq ($(IBRT_OTA),1)

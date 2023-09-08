@@ -35,7 +35,7 @@
 #include "bt_sco_chain.h"
 #include "hal_codec.h"
 #include "app_hfp.h"
-
+#include "cst_capacitive_tp_hynitron_cst0xx.h"
 
 
 static bool custom_tota_ble_send_ind_ntf_generic(bool isNotification, bool enable, uint8_t conidx, uint16_t handle, const uint8_t* ptrData, uint32_t length)
@@ -243,9 +243,27 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SEND_CALL_EVENT:
+            if(data[2] == 0x01 && data_len == 0x04)
+            {
+                cst816s_ble_custom_set_event(data[3]); //TODO: Select call status event.
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SNED_BUTTON_EVENT:
+            if(data[2] == 0x01 && data_len == 0x04)
+            {
+                cst816s_ble_custom_set_event(data[3]); //TODO: Select media status event.
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            data_len = 0x03;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_LANGUAGE:

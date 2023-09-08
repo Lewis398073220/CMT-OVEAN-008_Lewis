@@ -53,6 +53,14 @@ enum{
 
 uint8_t gesture_id=0;
 
+static void Key_pro(void);
+
+void cst816s_ble_custom_set_event(uint8_t event)
+{
+    gesture_id = event;
+    Key_pro();
+}
+
 void user_delay_ms(uint16_t Nms)
 {
     hal_sys_timer_delay(MS_TO_TICKS(Nms));

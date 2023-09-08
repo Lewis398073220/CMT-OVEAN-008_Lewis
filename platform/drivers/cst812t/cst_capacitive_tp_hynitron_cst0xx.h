@@ -38,7 +38,8 @@ enum ctp_gesture_id{
 	CTP_GESTURE_COVER_PRESS=0x1E,
 	CTP_GESTURE_COVER_LEAVE=0x1F,	
 };
-	
+
+void cst816s_ble_custom_set_event(uint8_t event);	
 void user_delay_ms(uint16_t Nms);
 void hal_set_cst816s_rst_high(void);
 void hal_set_cst816s_rst_low(void);
