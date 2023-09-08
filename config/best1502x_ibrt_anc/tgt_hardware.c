@@ -27,15 +27,15 @@ const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_enable = {
 };
 #endif /*CMT_008_LDO_ENABLE*/
 
-#ifdef CMT_008_LDO_1V8_3V3_ENABLE /* Match the new hardware setting. add by Jay. */
-const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_3v3_enable = {
+#ifdef CMT_008_LDO_1V8_3V0_ENABLE /* Match the new hardware setting. add by Jay. */
+const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_3v0_enable = {
     HAL_IOMUX_PIN_P1_7, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
 };
 
 const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ldo_1v8_enable = {
     HAL_IOMUX_PIN_P1_5, HAL_IOMUX_FUNC_AS_GPIO, HAL_IOMUX_PIN_VOLTAGE_VIO, HAL_IOMUX_PIN_PULLUP_ENABLE
 };
-#endif /*CMT_008_LDO_1V8_3V3_ENABLE*/
+#endif /*CMT_008_LDO_1V8_3V0_ENABLE*/
 
 #ifdef __AC107_ADC__
 const struct HAL_IOMUX_PIN_FUNCTION_MAP cfg_hw_ac107_ldo_enable = {

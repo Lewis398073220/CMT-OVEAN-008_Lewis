@@ -1264,6 +1264,8 @@ void ntc_capture_irqhandler(uint16_t irq_val, HAL_GPADC_MV_T volt)
             osTimerStop(app_battery_timer);
             osTimerStop(app_ntc_timer);
             TRACE(1, "[%s] Temp abnormal need shutdown.", __func__);
+            media_PlayAudio(AUD_ID_POWER_OFF, 0);
+            osDelay(500);
             app_shutdown();
         }
     }
