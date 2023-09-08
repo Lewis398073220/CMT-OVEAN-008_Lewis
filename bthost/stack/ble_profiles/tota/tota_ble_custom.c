@@ -363,6 +363,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_HEADSET_ADDRESS:
+            if(data[2] == 0 && data_len == 3)
+            {
+                data[2] = 0x06;
+                memcpy(&data[3], (uint8*) bt_get_local_address(), data[2]);
+                data_len += data[2];
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_L_R_CHANNEL_BALANCE:
