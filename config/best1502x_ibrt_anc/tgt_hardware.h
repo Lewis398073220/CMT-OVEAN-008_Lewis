@@ -34,7 +34,10 @@ extern "C" {
 
 #define REVISION_FW ("0.2.0\0")
 
+#define REVISION_PCBA ("0.2.0\0")
+
 const char * app_tota_get_fw_version(void);
+const char * app_tota_get_pcba_version(void);
 
 /***********************************************************************************/
 #endif /*CMT_008_SPP_GET_FW*/

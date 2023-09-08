@@ -2517,9 +2517,15 @@ const SpectrumFixConfig audio_spectrum_cfg = {
 
 #ifdef CMT_008_SPP_GET_FW
 static const char device_firmware_version[] = REVISION_FW;
+static const char device_pcba_version[] = REVISION_PCBA;
 
 const char * app_tota_get_fw_version(void)
 {
     return device_firmware_version;
+}
+
+const char * app_tota_get_pcba_version(void)
+{
+    return device_pcba_version;
 }
 #endif /*CMT_008_SPP_GET_FW*/

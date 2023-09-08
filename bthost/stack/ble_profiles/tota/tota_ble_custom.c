@@ -457,7 +457,18 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_PCBA_VER:
-            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
+            if(data[2] == 0 && data_len == 3)
+            {
+                uint32_t resp_data_len = strlen(app_tota_get_pcba_version());
+                data[2] = resp_data_len;
+                memcpy(&data[3], (uint8*) app_tota_get_pcba_version(), resp_data_len);
+                data_len += resp_data_len;
+
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_API_VER:
@@ -469,9 +480,9 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         case TOTA_BLE_CMT_COMMAND_GET_CHIPSET_INFO:
             /* define chip info.
              *  +---------------+------------+------------+------+ +-----+
-             *  |   +     byte4 |            |            |      | |     |
+             *  |  +     byte4  |            |            |      | |     |
              *  |       +       |    0x01    |    0x02    | 0x03 | |  N  |
-             *  |byte3      +   |            |            |      | |     |
+             *  |byte3       +  |            |            |      | |     |
              *  +---------------+------------+------------+------+ +-----+
              *  |     0x01      |  QCC3071   |  QCC3072   |      | |     |
              *  +---------------+------------+------------+------+ +-----+
