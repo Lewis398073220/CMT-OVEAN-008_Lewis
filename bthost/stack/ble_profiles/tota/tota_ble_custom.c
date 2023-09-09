@@ -251,6 +251,16 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SEND_MUSIC_EVENT:
+            if(data[2] == 0x01 && data_len == 0x04)
+            {
+                cst816s_ble_custom_set_event(data[3]); //TODO: Select media music event.
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SEND_CALL_EVENT:
@@ -269,7 +279,7 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         case TOTA_BLE_CMT_COMMAND_SET_SNED_BUTTON_EVENT:
             if(data[2] == 0x01 && data_len == 0x04)
             {
-                cst816s_ble_custom_set_event(data[3]); //TODO: Select media status event.
+                //cst816s_ble_custom_set_event(data[3]); //TODO: Select button event.
                 data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
