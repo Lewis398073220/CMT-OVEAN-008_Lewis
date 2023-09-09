@@ -150,7 +150,7 @@ int app_status_indication_set(APP_STATUS_INDICATION_T status)
             cfg0.part[0].time = (300);
             cfg0.part[1].level = 0;
 #ifdef CMT_008_UI_LED_INDICATION
-            cfg0.part[1].time = (1000);
+            cfg0.part[1].time = (5000);
 #else /*CMT_008_UI_LED_INDICATION*/
             cfg0.part[1].time = (8000);
 #endif /*CMT_008_UI_LED_INDICATION*/
