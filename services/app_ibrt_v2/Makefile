@@ -83,7 +83,8 @@ subdir-ccflags-y += \
     -Iservices/bt_app \
     -Iapps/sensorhub \
     -Iservices/audio_manager/ \
-    -Iapps/bt_sync
+    -Iapps/bt_sync \
+    -Iapps/user
 
 ifeq ($(SBC_REDUCE_SIZE),1)
 subdir-ccflags-y += \

@@ -115,11 +115,11 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data[3] == 0x01 && data_len == 0x04)
             {
                 app_ibrt_if_nvrecord_delete_all_mobile_record();
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
-            data_len = 0x03;
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -139,13 +139,12 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data_len == 0x04 && (data[3] >= 0x00 || data[3] <= 0x0F))
             {
                 app_bt_stream_volumeset(data[3]);
-
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
 
-            data_len = 0x03;
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -165,16 +164,16 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_FUNC_ON_OFF:
-            if(data[2] && (data[3] == 0x00 || data[3] == 0x01))
+            if(data[2] == 0x01 && (data[3] == 0x00 || data[3] == 0x01) && data_len == 0x04)
             {
                 bool touch_lock = data[3] ? 1 : 0;
                 user_custom_set_touch_clock(touch_lock);
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
 
-            data_len = 0x03;
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -204,26 +203,27 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data_len == 0x04)
             {
                 user_custom_set_sound_prompt(data[3]);
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
-            data_len = 0x03;
+
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SHUTDOWN_TIME:
-            if(data[2] == 0x04 && data[5] == 0x00 && data[6] == 0x00)
+            if(data[2] == 0x04 && data[5] == 0x00 && data[6] == 0x00 && data_len == 0x07)
             {
                 uint16_t shutdown_time = (data[3] << 8) | data[4];
                 user_custom_set_shutdown_time(shutdown_time);
+                data[2] = 0x01;
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
 
-            data[2] = 0x01;
-            data_len = 0x03;
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -231,6 +231,17 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_STANDBY_TIME:
+            if(data[2] == 0x02 && data_len == 0x05)
+            {
+                uint16_t standby_time = (data[3] << 8) | data[4];
+                user_custom_set_standby_time(standby_time);
+                data[2] = 0x01;
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_EQ_MODE:
@@ -246,11 +257,12 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data_len == 0x04)
             {
                 cst816s_ble_custom_set_event(data[3]); //TODO: Select call status event.
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
-            data_len = 0x03;
+
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -258,11 +270,12 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data_len == 0x04)
             {
                 cst816s_ble_custom_set_event(data[3]); //TODO: Select media status event.
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
-            data_len = 0x03;
+
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -285,12 +298,12 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             if(data[2] == 0x01 && data_len == 0x04 && (data[3] == 0x00 || data[3] == 0x01))
             {
                 app_hfp_siri_voice((bool) data[3]);
+                data_len = 0x03;
                 rsp_status = SUCCESS_STATUS;
             }
             else
                 rsp_status = NOT_SUPPORT_STATUS;
 
-            data_len = 0x03;
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
@@ -431,6 +444,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_STANDBY_TIME:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                uint16_t standby_time = user_custom_get_standby_time();
+                data[3] = (standby_time & 0xFF00) >> 8;
+                data[4] = standby_time & 0xFF;
+                data_len = 0x05;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_EQ_MODE:

@@ -44,7 +44,7 @@
 #include "app_ui_api.h"
 #include "app_bt_media_manager.h"
 #include "app_ibrt_debug.h"
-
+#include "app_user.h" //Add by Jay
 
 #ifdef CUSTOMER_APP_BOAT
 #include "app_tota_general.h"
@@ -1998,6 +1998,7 @@ static void app_mute_key_handle(APP_KEY_STATUS *status, void *param)
         case APP_KEY_EVENT_CLICK:
             //bt_key_handle_siri_key(APP_KEY_EVENT_NONE);
             bt_key_handle_mute_key();
+            user_custom_reset_standby_time();
             break;
 
         default:
@@ -2008,6 +2009,9 @@ static void app_mute_key_handle(APP_KEY_STATUS *status, void *param)
 static void app_factory_reset_handle(APP_KEY_STATUS *status, void *param)
 {
     TRACE(2,"%s event:%d", __func__, status->event);
+
+    user_custom_reset_standby_time();
+
     switch(status->event)
     {
         case APP_KEY_EVENT_LONGPRESS:

@@ -261,6 +261,7 @@ struct nvrecord_env_t {
     char custom_bt_name[27];     /* 27 = CLASSIC_BTNAME_LEN */
     bool touch_lock;
     uint8_t suond_prompt_level;
+    uint16_t standby_time;
 #endif /*CMT_008_BLE_ENABLE*/
 };
 

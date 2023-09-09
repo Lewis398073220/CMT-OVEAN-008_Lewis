@@ -32,6 +32,7 @@
 #include "app_bt_stream.h"//along add
 
 #include "ac107.h"  //add by jay
+#include "app_user.h" //Add by Jay
 
 #ifdef __AI_VOICE__
 #include "ai_manager.h"
@@ -228,6 +229,8 @@ void app_ibrt_normal_ui_handle_key_v2(bt_bdaddr_t *remote, APP_KEY_STATUS *statu
 #ifdef CMT_008_UI
                 LOG_I("double click [%s]",__func__);
 
+                user_custom_reset_standby_time();
+                
                 uint8_t active_cons;
                 active_cons = btif_me_get_activeCons();
 

@@ -1151,6 +1151,8 @@ void app_anc_key(APP_KEY_STATUS *status, void *param)
     static uint8_t flag = 0;
     TRACE(1,"%s jay anc key  flag:[%d]",__func__,flag);
 
+    user_custom_reset_standby_time();
+
     app_anc_loop_switch();
 
 #ifdef __USE_3_5JACK_CTR__

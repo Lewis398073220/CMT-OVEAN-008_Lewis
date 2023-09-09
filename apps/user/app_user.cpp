@@ -274,7 +274,7 @@ void apps_jack_event_process(void)
 {    	
 	static uint8_t in_val = 0, out_val = 0 , mic_val=0;
 
-    TRACE(1, "     [%s], jack_pin:[%d]", __func__, hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_pio_3p5_jack_detecter.pin));
+    //TRACE(1, "     [%s], jack_pin:[%d]", __func__, hal_gpio_pin_get_val((enum HAL_GPIO_PIN_T)cfg_hw_pio_3p5_jack_detecter.pin));
 
     if(false == apps_3p5_jack_get_val())
     {
@@ -405,6 +405,7 @@ static uint32_t set_shutdown_time_second = shutdown_time * 60;
 
 static uint32_t remaining_shutdown_time_second;
 
+
 static void user_custom_open_timehandler(void const *param)
 {
 	user_event_post(USER_EVENT_CUSTOM);
@@ -434,7 +435,7 @@ static void user_custom_need_shutdown(void)
     app_shutdown();
 }
 
-static void user_custom_event_process(void)
+static void user_custom_handle_shutdown(void)
 {
     if(shutdown_time != 0xFFFF)
     {
@@ -463,6 +464,37 @@ static void user_custom_event_process(void)
     }
 }
 
+static void user_custom_handle_standby_time(void)
+{
+    PLAYBACK_STATE_E music_state = app_bt_get_music_playback_status();
+    CALL_STATE_E call_state = app_bt_get_call_state();
+
+    if(!app_bt_count_connected_device())
+        return;
+
+    if(music_state == PLAYING)
+        return;
+
+    if(call_state != CALL_STATE_IDLE)
+        return;
+
+    if(!user_data.standby_time)
+        return;
+
+    user_data.standby_time_count += 1;
+
+    if(user_data.standby_time_count >= user_data.standby_time)
+        user_custom_need_shutdown();
+}
+
+/* One second timer handle */
+static void user_custom_event_process(void)
+{
+    user_custom_handle_shutdown();
+
+    user_custom_handle_standby_time();
+}
+
 void user_custom_set_shutdown_time(uint16_t time)
 {
     shutdown_time = time;
@@ -482,6 +514,29 @@ uint16_t user_custom_get_remaining_shutdown_time(void)
     }
 
     return remaining_time;
+}
+
+void user_custom_reset_standby_time(void)
+{
+    TRACE(1, "[%s] Reset standby time", __func__);
+    user_data.standby_time_count = 0x00;
+}
+
+void user_custom_set_standby_time(uint16_t time)
+{
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
+
+    user_data.standby_time = time * 60;
+    nvrecord_env->standby_time = time * 60;
+
+    nv_record_env_set(nvrecord_env);
+    nv_record_flash_flush();
+}
+
+uint16_t user_custom_get_standby_time(void)
+{
+    return (user_data.standby_time / 60);
 }
 
 bool user_custom_get_notify_enable_idx(void)
@@ -575,6 +630,9 @@ void user_custom_nvrecord_data_get(void)
     user_data.user_set_bt_name_len = nvrecord_env->custom_bt_name_len;
     memcpy(user_data.user_set_bt_name, nvrecord_env->custom_bt_name, user_data.user_set_bt_name_len);
     user_data.touch_lock = nvrecord_env->touch_lock;
+    user_data.standby_time = nvrecord_env->standby_time;
+
+    user_data.standby_time_count = 0x00;
 }
 
 #if 0

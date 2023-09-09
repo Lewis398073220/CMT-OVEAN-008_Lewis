@@ -231,7 +231,9 @@ static void cst816s_int_handler(enum HAL_GPIO_PIN_T pin)
 
 		CTP_DBG_TRACE(2,"******%s: 0x%2x",__func__,gesture_id);		
 				
-		touch_event_post(TOUCH_EVENT_PRO);		
+		touch_event_post(TOUCH_EVENT_PRO);
+
+        user_custom_reset_standby_time();
 	}
     cst816s_int_irq();
 }

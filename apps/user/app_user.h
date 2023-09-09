@@ -78,11 +78,15 @@ typedef struct {
     char user_set_bt_name[27]; /* 27 = CLASSIC_BTNAME_LEN */
     bool touch_lock;
     uint8_t suond_prompt_level;
+    uint16_t standby_time;
+    uint16_t standby_time_count;
 } app_user_custom_data_t;
 
+void user_custom_reset_standby_time(void);
+void user_custom_set_standby_time(uint16_t time);
+uint16_t user_custom_get_standby_time(void);
 void user_custom_set_shutdown_time(uint16_t time);
 uint16_t user_custom_get_remaining_shutdown_time(void);
-
 bool user_custom_get_notify_enable_idx(void);
 bool user_custom_get_notify_enable_idx1(void);
 void user_custom_battery_level_notify(uint8_t level);
