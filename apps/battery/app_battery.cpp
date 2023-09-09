@@ -187,6 +187,17 @@ struct APP_BATTERY_MEASURE_T
 #ifdef IS_BES_BATTERY_MANAGER_ENABLED
 
 #ifdef CMT_008_NTC_DETECT
+#if 1
+/* ntc 10k, NTC_REF is 1.8v  */
+#define CHARGE_HIGH_TEMPERATURE          590     // 45C
+#define CHARGE_LOW_TEMPERATURE           1320    // 0C
+#define CHARGE_HIGH_TEMPERATURE_RECOVER  530     // 43C
+#define CHARGE_LOW_TEMPERATURE_RECOVER   1270    // 2C
+
+#define DISCHARGE_HIGH_TEMPERATURE       400    // 55C
+#define DISCHARGE_LOW_TEMPERATURE        1587   // -15C
+
+#else /*1*/
 /* ntc 30k ok */
 #define CHARGE_HIGH_TEMPERATURE          225     // 45C
 #define CHARGE_LOW_TEMPERATURE           949    // 0C
@@ -195,7 +206,7 @@ struct APP_BATTERY_MEASURE_T
 
 #define DISCHARGE_HIGH_TEMPERATURE       193    // 50C
 #define DISCHARGE_LOW_TEMPERATURE        1266   // -10C
-
+#endif /*1*/
 #define TEMPERATURE_ERROT_COUNT          5
 
 static int8_t charge_temperature_error_num=0;
