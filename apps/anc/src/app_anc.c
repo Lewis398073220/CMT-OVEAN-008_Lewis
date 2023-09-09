@@ -833,7 +833,7 @@ int32_t app_anc_loop_switch(void)
     }
 
     /* Setup the system requency as 'APP_SYSFREQ_208M', add by Jay. */
-    app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_208M);
+    //app_sysfreq_req(APP_SYSFREQ_USER_APP_0, APP_SYSFREQ_208M);
 
     app_anc_switch(mode);
 
