@@ -124,6 +124,15 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_DEVICE_FACTORY:
+            if(data[2] == 0x01 && data[3] == 0x01 && data_len == 0x03)
+            {
+                user_custom_factory_reset();
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_HEADSET_LIGHT_MODE:     

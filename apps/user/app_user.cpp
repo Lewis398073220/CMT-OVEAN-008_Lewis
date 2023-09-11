@@ -621,6 +621,22 @@ void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
     nv_record_flash_flush();
 }
 
+void user_custom_factory_reset(void)
+{
+    //TODO:
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
+
+    user_data.touch_lock = FALSE;
+    nvrecord_env->touch_lock = FALSE;
+
+    user_data.standby_time = 0x00;
+    nvrecord_env->standby_time = 0x00;
+
+    nv_record_env_set(nvrecord_env);
+    nv_record_flash_flush();
+}
+
 void user_custom_nvrecord_data_get(void)
 {
     TRACE(1, " [%s] ", __func__);

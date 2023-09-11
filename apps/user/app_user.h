@@ -82,6 +82,7 @@ typedef struct {
     uint16_t standby_time_count;
 } app_user_custom_data_t;
 
+void user_custom_factory_reset(void);
 void user_custom_reset_standby_time(void);
 void user_custom_set_standby_time(uint16_t time);
 uint16_t user_custom_get_standby_time(void);
