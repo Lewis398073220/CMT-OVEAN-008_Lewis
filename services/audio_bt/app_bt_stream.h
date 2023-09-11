@@ -334,6 +334,9 @@ typedef bool (*app_bt_sco_switch_trigger_t)(void);
 void app_bt_sco_switch_trigger_init(app_bt_sco_switch_trigger_t sco_switch_trigger);
 
 void app_bt_sco_switch_trigger_deinit(void);
+
+void gaming_mode_set(bool game_enable); //add by jay
+
 #ifdef __cplusplus
 }
 #endif

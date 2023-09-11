@@ -158,6 +158,15 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_LOW_LATENCY_MODE:
+            if(data[2] == 0x01 && data_len == 0x04 && (data[3] == 0x00 || data[3] == 0x01))
+            {
+                user_custom_gaming_mode_set(data[3]);
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_SENSITIVITY:
@@ -369,10 +378,20 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
             else
                 rsp_status = NOT_SUPPORT_STATUS;
 
-            custon_tota_ble_send_response(rsp_status, data, data_len);            
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
-        case TOTA_BLE_CMT_COMMAND_GET_LOW_LATENCY_MODE:    
+        case TOTA_BLE_CMT_COMMAND_GET_LOW_LATENCY_MODE:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = user_custom_gaming_mode_get();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_TOUCH_SENSITIVITY:

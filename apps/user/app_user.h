@@ -80,8 +80,11 @@ typedef struct {
     uint8_t suond_prompt_level;
     uint16_t standby_time;
     uint16_t standby_time_count;
+    bool current_gaming_mode_state;
 } app_user_custom_data_t;
 
+bool user_custom_gaming_mode_get(void);
+void user_custom_gaming_mode_set(bool enable);
 void user_custom_factory_reset(void);
 void user_custom_reset_standby_time(void);
 void user_custom_set_standby_time(uint16_t time);

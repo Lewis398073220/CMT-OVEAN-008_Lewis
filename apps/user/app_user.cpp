@@ -495,6 +495,17 @@ static void user_custom_event_process(void)
     user_custom_handle_standby_time();
 }
 
+void user_custom_gaming_mode_set(bool enable)
+{
+    user_data.current_gaming_mode_state = enable;
+    gaming_mode_set(enable);
+}
+
+bool user_custom_gaming_mode_get(void)
+{
+    return user_data.current_gaming_mode_state;
+}
+
 void user_custom_set_shutdown_time(uint16_t time)
 {
     shutdown_time = time;
