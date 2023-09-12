@@ -468,6 +468,7 @@ static void user_custom_handle_standby_time(void)
 {
     PLAYBACK_STATE_E music_state = app_bt_get_music_playback_status();
     CALL_STATE_E call_state = app_bt_get_call_state();
+    app_anc_mode_t anc_mode = app_anc_get_curr_mode();
 
     if(!app_bt_count_connected_device())
         return;
@@ -476,6 +477,9 @@ static void user_custom_handle_standby_time(void)
         return;
 
     if(call_state != CALL_STATE_IDLE)
+        return;
+
+    if(anc_mode != APP_ANC_MODE_OFF)
         return;
 
     if(!user_data.standby_time)
@@ -548,6 +552,13 @@ void user_custom_set_standby_time(uint16_t time)
 uint16_t user_custom_get_standby_time(void)
 {
     return (user_data.standby_time / 60);
+}
+
+bool user_custom_get_active_standby_time(void)
+{
+    if(user_data.standby_time_count)
+        return TRUE;
+    return FALSE;
 }
 
 bool user_custom_get_notify_enable_idx(void)

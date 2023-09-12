@@ -89,6 +89,7 @@ void user_custom_factory_reset(void);
 void user_custom_reset_standby_time(void);
 void user_custom_set_standby_time(uint16_t time);
 uint16_t user_custom_get_standby_time(void);
+bool user_custom_get_active_standby_time(void);
 void user_custom_set_shutdown_time(uint16_t time);
 uint16_t user_custom_get_remaining_shutdown_time(void);
 bool user_custom_get_notify_enable_idx(void);

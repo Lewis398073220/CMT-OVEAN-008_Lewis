@@ -395,9 +395,11 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_TOUCH_SENSITIVITY:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_ENTER_OTA_MODE_STATUS:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len); //TODO:
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_TOUCH_FUNC_ON_OFF:
@@ -479,6 +481,7 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_CAMERA_SWITCH_STATE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_STANDBY_TIME:
@@ -534,9 +537,35 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_API_VER:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_SALES_REGION:
+            /* define sales region.
+             *  +---------------+--------------+
+             *  | SALES REGION  |     value    |
+             *  +---------------+--------------+
+             *  |     Global    |     0x00     |
+             *  +---------------+--------------+
+             *  |     China     |     0x01     |
+             *  +---------------+--------------+
+             *  |       .       |       .      |
+             *  +---------------+--------------+
+             *  |       N       |       N      |
+             *  +---------------+--------------+
+             */
+
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = 0x00;  //Sales region of Global.
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_CHIPSET_INFO:
@@ -575,6 +604,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_STANDBY_MODE_ACTIVELY:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = user_custom_get_active_standby_time();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_KEY_REDEFINITION:
