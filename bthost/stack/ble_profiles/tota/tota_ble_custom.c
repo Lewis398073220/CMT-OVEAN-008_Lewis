@@ -334,9 +334,11 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_KEY_REDEFINITION:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_VOICE_NOISE_REDUCTION_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_VOICE_ASSISTANT_CONTROL:
@@ -357,6 +359,7 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_HARSH_SOUND:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_VOKALEN_SOUND:
@@ -694,9 +697,11 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_KEY_REDEFINITION:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_VOICE_NOISE_REDUCTION_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION:
