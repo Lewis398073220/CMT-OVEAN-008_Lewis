@@ -477,6 +477,40 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_AUDIO_CODEC_FORMAT:
+            /* define codec format.
+             *  +---------------+--------------+
+             *  |     Format    |     Value    |
+             *  +---------------+--------------+
+             *  |     Default   |     0x00     |
+             *  +---------------+--------------+
+             *  |       SBC     |     0x01     |
+             *  +---------------+--------------+
+             *  |       AAC     |     0x02     |
+             *  +---------------+--------------+
+             *  |       APTX    |     0x03     |
+             *  +---------------+--------------+
+             *  |     APTX-HD   |     0x04     |
+             *  +---------------+--------------+
+             */
+
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                uint8_t code_format = bt_sbc_player_get_codec_type();
+                data[2] = 0x01;
+                if(BTIF_AVDTP_CODEC_TYPE_MPEG2_4_AAC == code_format)
+                {
+                    data[3] = 0x02;  //AAC
+                }
+                else
+                {
+                    data[3] = 0x01; //SBC
+                }
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_SOUND_PROMPTS_LEVEL:
