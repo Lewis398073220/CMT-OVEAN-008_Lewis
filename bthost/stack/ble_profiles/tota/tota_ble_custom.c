@@ -558,7 +558,7 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_BATTERY_LEVEL:
-            if(data[2] == 0 && data_len == 3)
+            if(data[2] == 0x00 && data_len == 0x03)
             {
                 uint32_t resp_data_len = sizeof(int8_t);
                 data[2] = resp_data_len;
@@ -575,7 +575,7 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_PCBA_VER:
-            if(data[2] == 0 && data_len == 3)
+            if(data[2] == 0x00 && data_len == 0x03)
             {
                 uint32_t resp_data_len = strlen(app_tota_get_pcba_version());
                 data[2] = resp_data_len;
@@ -590,6 +590,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_API_VER:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                uint8_t api[3] = {0x00, 0x01, 0x00};  //API version v0.1.0
+                data[2] = 0x03;
+                memcpy(&data[3], api, sizeof(api));
+                data_len = 0x06;
+
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
             custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
