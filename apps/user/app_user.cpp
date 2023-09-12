@@ -15,7 +15,7 @@
 #include "app_thread.h"
 #include "tgt_hardware.h"
 #include "app_user.h"
-//#include "philips_ble_api.h"
+#include "hal_codec.h"
 #include "app_bt_stream.h"
 #include "bt_sco_chain.h"
 #include "app_audio_control.h"
@@ -23,11 +23,9 @@
 #include "nvrecord_extension.h"
 #include "nvrecord_env.h"
 
-//#if (defined(__AMP_SWITCH_CTR__)&&defined(__USE_AMP_MUTE_CTR__))
 #include "btapp.h"
 #include "app_anc.h"
 #include "app_bt_media_manager.h"
-//#endif
 
 #if defined(__AC107_ADC__)
 #include "ac107.h"
@@ -561,6 +559,43 @@ bool user_custom_get_active_standby_time(void)
     return FALSE;
 }
 
+bool user_custom_get_sidetone_status(void)
+{
+    return (user_data.sidetone_state);
+}
+
+void user_custom_set_sidetone(bool en)
+{
+    if(en)
+    {
+        hal_codec_dac_mute(TRUE);
+		osDelay(60);	
+		hal_codec_sidetone_enable();
+		osDelay(60);
+		hal_codec_dac_mute(FALSE);
+    }
+    else
+    {
+        hal_codec_dac_mute(TRUE);
+		osDelay(60);	
+		hal_codec_sidetone_disable();
+		osDelay(60);
+		hal_codec_dac_mute(FALSE);
+    }
+
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
+
+    user_data.sidetone_state = en;
+    if(user_data.sidetone_state != nvrecord_env->sidetone_state)
+    {
+        nvrecord_env->sidetone_state = en;
+
+        nv_record_env_set(nvrecord_env);
+        nv_record_flash_flush();
+    }
+}
+
 bool user_custom_get_notify_enable_idx(void)
 {
     return user_data.notify_enable_idx_cfg;
@@ -655,6 +690,9 @@ void user_custom_factory_reset(void)
     user_data.standby_time = 0x00;
     nvrecord_env->standby_time = 0x00;
 
+    user_data.sidetone_state = 0x00;
+    nvrecord_env->sidetone_state = 0x00;
+
     nv_record_env_set(nvrecord_env);
     nv_record_flash_flush();
 }
@@ -671,6 +709,8 @@ void user_custom_nvrecord_data_get(void)
     user_data.standby_time = nvrecord_env->standby_time;
 
     user_data.standby_time_count = 0x00;
+
+    user_data.sidetone_state = nvrecord_env->sidetone_state;
 }
 
 #if 0

@@ -318,6 +318,16 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_SIDETONE_CONTROL_STATUS:
+            if(data[2] == 0x01 && data_len == 0x04 && (data[3] == 0x00 || data[3] ==0x01))
+            {
+                user_custom_set_sidetone(data[3]);
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_STANDBY_MODE_ACTIVELY:
@@ -610,6 +620,17 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_SIDETONE_CONTROL_STATUS:
+            if(data[2] == 0x00 && data_len ==0x03)
+            {
+                data[2] = 0x01;
+                data[3] = user_custom_get_sidetone_status();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_STANDBY_MODE_ACTIVELY:

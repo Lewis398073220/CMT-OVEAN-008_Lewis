@@ -81,8 +81,11 @@ typedef struct {
     uint16_t standby_time;
     uint16_t standby_time_count;
     bool current_gaming_mode_state;
+    bool sidetone_state;
 } app_user_custom_data_t;
 
+bool user_custom_get_sidetone_status(void);
+void user_custom_set_sidetone(bool en);
 bool user_custom_gaming_mode_get(void);
 void user_custom_gaming_mode_set(bool enable);
 void user_custom_factory_reset(void);

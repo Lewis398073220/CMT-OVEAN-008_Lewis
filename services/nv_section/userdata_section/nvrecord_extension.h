@@ -262,6 +262,7 @@ struct nvrecord_env_t {
     bool touch_lock;
     uint8_t suond_prompt_level;
     uint16_t standby_time;
+    bool sidetone_state;
 #endif /*CMT_008_BLE_ENABLE*/
 };
 
