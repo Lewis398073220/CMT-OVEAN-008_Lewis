@@ -353,6 +353,7 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_FLASHING_LIGHTS:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_HARSH_SOUND:
@@ -729,51 +730,6 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
     }
 }
 
-static void custom_tota_ble_command_notify_handle(uint8_t* data, uint32_t data_len)
-{
-    switch (data[1])
-    {
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_HEADSET_LIGHT_MODE:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_IN_EAR_SWITCH:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_NOISE_CANCELLING_MODE_AND_LEVEL:     
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_HEADSET_VOLUME:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_LOW_LATENCY_MODE:    
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_TOUCH_SENSITIVITY:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_SOUND_PROMPTS_LEVEL:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_EQ_MODE:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_BATTERY_LEVEL:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_SIDETONE_CONTROL_STATUS:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_STANDBY_MODE_ACTIVELY:
-        break;
-
-        case TOTA_BLE_CMT_COMMAND_NOTIFY_KEY_REDEFINITION:
-        break;
-
-        default:
-        break;
-    }
-}
-
 // TODO: Jay
 void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length)
 {
@@ -789,10 +745,6 @@ void custom_tota_ble_data_handle(uint8_t* ptrData, uint32_t length)
             custom_tota_ble_command_get_handle(ptrData, length);
         break;
 
-        case TOTA_BLE_CMT_COMMAND_NOTIFY:
-            TRACE(1 ,"[%s]  TOTA_BLE_CMT_COMMAND_NOTIFY", __func__);
-            custom_tota_ble_command_notify_handle(ptrData, length);
-        break;
         default:
             TRACE(1 ,"[%s]  Invalid command setting", __func__);
             custon_tota_ble_send_response(NOT_SUPPORT_STATUS, ptrData, length);

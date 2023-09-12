@@ -620,7 +620,7 @@ void user_custom_get_notify_flag(bool flag, uint8_t notify_enable)
 
 void user_custom_battery_level_notify(uint8_t level)
 {
-    uint8_t data[] = {0x20, 0x1F, 0x03, level, 0x00, 0x00};
+    uint8_t data[] = {TOTA_BLE_CMT_COMMAND_NOTIFY, TOTA_BLE_CMT_COMMAND_NOTIFY_BATTERY_LEVEL, 0x03, level, 0x00, 0x00};
     custon_tota_ble_send_notify_response(NO_NEED_STATUS_RESP, data, sizeof(data));
 }
 
