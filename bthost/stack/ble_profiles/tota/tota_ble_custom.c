@@ -135,10 +135,12 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
             custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
-        case TOTA_BLE_CMT_COMMAND_SET_HEADSET_LIGHT_MODE:     
+        case TOTA_BLE_CMT_COMMAND_SET_HEADSET_LIGHT_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_IN_EAR_SWITCH:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_NOISE_CANCELLING_MODE_AND_LEVEL:    
@@ -170,15 +172,19 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_SENSITIVITY:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_TEACHING_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_ENTER_OTA_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len); //TODO
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TIME_SYNC:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_TOUCH_FUNC_ON_OFF:
@@ -246,6 +252,7 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_CAMERA_SWITCH:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_STANDBY_TIME:
@@ -359,9 +366,11 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
     switch (data[1])
     {
         case TOTA_BLE_CMT_COMMAND_GET_HEADSET_LIGHT_MODE:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_IN_EAR_SWITCH:
+            custon_tota_ble_send_response(NOT_SUPPORT_STATUS, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_NOISE_CANCELLING_MODE_AND_LEVEL:     
