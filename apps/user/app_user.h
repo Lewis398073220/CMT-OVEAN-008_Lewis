@@ -93,6 +93,8 @@ void user_custom_set_sidetone(bool en);
 bool user_custom_gaming_mode_get(void);
 void user_custom_gaming_mode_set(bool enable);
 void user_custom_factory_reset(void);
+
+void user_custom_default_reset(void);
 void user_custom_reset_standby_time(void);
 void user_custom_set_standby_time(uint16_t time);
 uint16_t user_custom_get_standby_time(void);

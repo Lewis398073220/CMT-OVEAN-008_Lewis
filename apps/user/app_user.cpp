@@ -715,6 +715,12 @@ void user_custom_nvrecord_set_bt_name(char* data, uint8_t len)
 
 void user_custom_factory_reset(void)
 {
+    extern void app_factory_reset(void);
+    app_factory_reset();
+}
+
+void user_custom_default_reset(void)
+{
     //TODO:
     struct nvrecord_env_t *nvrecord_env;
     nv_record_env_get(&nvrecord_env);

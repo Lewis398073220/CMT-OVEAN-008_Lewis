@@ -377,6 +377,16 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_DEFAULT_SETTING:
+            if(data[2] == 0x01 && data_len == 0x04 && data[3] == 0x01)
+            {
+                user_custom_default_reset();
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         default:
