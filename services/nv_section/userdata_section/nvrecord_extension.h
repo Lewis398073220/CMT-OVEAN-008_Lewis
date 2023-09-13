@@ -263,6 +263,7 @@ struct nvrecord_env_t {
     uint8_t suond_prompt_level;
     uint16_t standby_time;
     bool sidetone_state;
+    uint8_t channel_balance_value;
 #endif /*CMT_008_BLE_ENABLE*/
 };
 

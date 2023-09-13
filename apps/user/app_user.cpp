@@ -26,6 +26,7 @@
 #include "btapp.h"
 #include "app_anc.h"
 #include "app_bt_media_manager.h"
+#include "audio_process.h"
 
 #if defined(__AC107_ADC__)
 #include "ac107.h"
@@ -403,6 +404,12 @@ static uint32_t set_shutdown_time_second = shutdown_time * 60;
 
 static uint32_t remaining_shutdown_time_second;
 
+const float value_balance_db[]={0,    0.3,  0.7,  1.0,  1.4,  1.7,  2.1,  2.4,  2.8,  3.2,
+                                3.5,  3.9,  4.3,  4.6,  5.0,  5.4,  5.8,  6.2,  6.5,  6.9,
+                                7.4,  7.8,  8.2,  8.6,  9.1,  9.5,  10.0, 10.5, 11.0, 11.5,
+                                12.0, 12.6, 13.2, 13.8, 14.4, 15.1, 15.8, 16.5, 17.3, 18.2,
+                                19.1, 20.1, 21.2, 22.5, 23.9, 25.6, 27.6, 30.2, 33.8, 39.9, 60};
+
 
 static void user_custom_open_timehandler(void const *param)
 {
@@ -596,6 +603,34 @@ void user_custom_set_sidetone(bool en)
     }
 }
 
+void user_custom_set_channel_balance(uint8_t balance_value)
+{
+    struct nvrecord_env_t *nvrecord_env;
+    nv_record_env_get(&nvrecord_env);
+
+    if(balance_value == 0x00)
+        nvrecord_env->channel_balance_value = 0xFF;
+    else
+        nvrecord_env->channel_balance_value = balance_value;
+    user_data.channel_balance_value = balance_value;
+
+    nv_record_env_set(nvrecord_env);
+    nv_record_flash_flush();
+
+    extern uint32_t bt_audio_set_eq(AUDIO_EQ_TYPE_T audio_eq_type,uint8_t index);
+    bt_audio_set_eq(AUDIO_EQ_TYPE_HW_DAC_IIR, app_anc_get_curr_mode()); // Take effect setting.
+}
+
+uint8_t user_custom_get_channel_balance_value(void)
+{
+    return user_data.channel_balance_value;
+}
+
+float user_custom_return_balance_value_db(uint8_t index)
+{
+    return value_balance_db[index];
+}
+
 bool user_custom_get_notify_enable_idx(void)
 {
     return user_data.notify_enable_idx_cfg;
@@ -711,6 +746,11 @@ void user_custom_nvrecord_data_get(void)
     user_data.standby_time_count = 0x00;
 
     user_data.sidetone_state = nvrecord_env->sidetone_state;
+
+    if(!nvrecord_env->channel_balance_value)
+        user_data.channel_balance_value = 0x32;
+    if(nvrecord_env->channel_balance_value == 0xFF)
+        user_data.channel_balance_value = 0x00;
 }
 
 #if 0

@@ -82,8 +82,12 @@ typedef struct {
     uint16_t standby_time_count;
     bool current_gaming_mode_state;
     bool sidetone_state;
+    uint8_t channel_balance_value;
 } app_user_custom_data_t;
 
+float user_custom_return_balance_value_db(uint8_t index);
+uint8_t user_custom_get_channel_balance_value(void);
+void user_custom_set_channel_balance(uint8_t balance_value);
 bool user_custom_get_sidetone_status(void);
 void user_custom_set_sidetone(bool en);
 bool user_custom_gaming_mode_get(void);

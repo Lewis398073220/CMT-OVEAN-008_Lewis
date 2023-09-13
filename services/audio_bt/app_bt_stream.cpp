@@ -2098,6 +2098,7 @@ uint32_t bt_audio_set_eq(AUDIO_EQ_TYPE_T audio_eq_type, uint8_t index)
 #if defined(__HW_DAC_IIR_EQ_PROCESS__)
         case AUDIO_EQ_TYPE_HW_DAC_IIR:
         {
+#ifdef CMT_008_BLE_ENABLE
             if(index >= EQ_HW_DAC_IIR_LIST_NUM)
             {
                 TRACE_AUD_STREAM_W("[EQ] SET index %u > EQ_HW_DAC_IIR_LIST_NUM", index);
@@ -2105,6 +2106,33 @@ uint32_t bt_audio_set_eq(AUDIO_EQ_TYPE_T audio_eq_type, uint8_t index)
             }
 
             iir_cfg=audio_eq_hw_dac_iir_cfg_list[index];
+
+            IIR_CFG_T iir_cfg1;
+            memcpy(&iir_cfg1,iir_cfg,sizeof(IIR_CFG_T));
+            uint8_t gain_balance = 0;
+            gain_balance = user_custom_get_channel_balance_value();
+            
+            if(gain_balance>50)
+            {
+               iir_cfg1.gain1 = iir_cfg1.gain1 - user_custom_return_balance_value_db(gain_balance-50);
+            }
+            else if(gain_balance<50)
+            {
+                iir_cfg1.gain0 = iir_cfg1.gain0 - user_custom_return_balance_value_db(50-gain_balance);
+            }
+           
+           iir_cfg= &iir_cfg1;
+           TRACE(3,"[%s] L=[%d], R=[%d]", __func__, (int8_t)(iir_cfg->gain0),(int8_t)(iir_cfg->gain1));
+
+#else /*CMT_008_BLE_ENABLE*/        
+            if(index >= EQ_HW_DAC_IIR_LIST_NUM)
+            {
+                TRACE_AUD_STREAM_W("[EQ] SET index %u > EQ_HW_DAC_IIR_LIST_NUM", index);
+                return 1;
+            }
+
+            iir_cfg=audio_eq_hw_dac_iir_cfg_list[index];
+#endif /*CMT_008_BLE_ENABLE*/
         }
         break;
 #endif

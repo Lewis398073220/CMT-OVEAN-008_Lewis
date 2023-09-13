@@ -202,6 +202,17 @@ static void custom_tota_ble_command_set_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_L_R_CHANNEL_BALANCE:
+            if(data[2] == 0x01 && data_len == 0x04 && data[3] >= 0x00 && data[3] <= 0x64)
+            {
+                user_custom_set_channel_balance(data[3]);
+                data[2] = 0x01;
+                data_len = 0x03;
+                rsp_status = SUCCESS_STATUS;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_SET_MULTIPOINT_SWITCH:
@@ -439,7 +450,7 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_HEADSET_ADDRESS:
-            if(data[2] == 0 && data_len == 3)
+            if(data[2] == 0x00 && data_len == 0x03)
             {
                 data[2] = 0x06;
                 memcpy(&data[3], (uint8*) bt_get_local_address(), data[2]);
@@ -453,28 +464,36 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_L_R_CHANNEL_BALANCE:
+            if(data[2] == 0x00 && data_len == 0x03)
+            {
+                data[2] = 0x01;
+                data[3] = user_custom_get_channel_balance_value();
+                data_len = 0x04;
+                rsp_status = NO_NEED_STATUS_RESP;
+            }
+            else
+                rsp_status = NOT_SUPPORT_STATUS;
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_MULTIPOINT_SWITCH:
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_DEVICE_NAME:
+            if(data[2] == 0x00 && data_len == 0x03)
             {
-                if(data[2] == 0 && data_len == 3)
-                {
-                    uint32_t resp_data_len = strlen(bt_get_local_name());
-                    data[2] = resp_data_len;
-                    memcpy(&data[3], (uint8*) bt_get_local_name(), resp_data_len);
-                    data_len += resp_data_len;
+                uint32_t resp_data_len = strlen(bt_get_local_name());
+                data[2] = resp_data_len;
+                memcpy(&data[3], (uint8*) bt_get_local_name(), resp_data_len);
+                data_len += resp_data_len;
 
-                    rsp_status = NO_NEED_STATUS_RESP;
-                }
-                else
-                {
-                    rsp_status = NOT_SUPPORT_STATUS;
-                }
-                custon_tota_ble_send_response(rsp_status, data, data_len);
+                rsp_status = NO_NEED_STATUS_RESP;
             }
+            else
+            {
+                rsp_status = NOT_SUPPORT_STATUS;
+            }
+            custon_tota_ble_send_response(rsp_status, data, data_len);
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_IDENTIFILER_SOUND_PROMPTS:
@@ -705,7 +724,7 @@ static void custom_tota_ble_command_get_handle(uint8_t* data, uint32_t data_len)
         break;
 
         case TOTA_BLE_CMT_COMMAND_GET_FIRMWARE_VERSION:
-            if(data[2] == 0 && data_len == 3)
+            if(data[2] == 0x00 && data_len == 0x03)
             {
                 uint32_t resp_data_len = strlen(app_tota_get_fw_version());
                 data[2] = resp_data_len;
